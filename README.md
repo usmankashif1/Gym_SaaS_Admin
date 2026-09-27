@@ -1,4 +1,4 @@
-# GymFlow
+<!-- # GymFlow
 
 GymFlow is a web-only gym management app built with Expo, React Native Web, Expo Router, and Supabase.
 
@@ -58,4 +58,4 @@ Set `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in the
 npx tsc --noEmit
 npm run lint
 npx expo export --platform web
-```
+``` -->
