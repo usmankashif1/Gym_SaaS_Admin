@@ -10,18 +10,34 @@ export async function getCurrentGym(): Promise<GymContext> {
 
   const { data, error } = await supabase
     .from("gym_memberships")
-    .select("gym_id, role, gyms!inner(name,logo_path)")
+    .select("gym_id, role, gyms!inner(name,logo_path,admission_fee)")
     .eq("user_id", userResult.user.id)
     .limit(1)
     .maybeSingle();
 
   if (error) throw error;
   if (!data) throw new Error("This account is not connected to a gym.");
-  const gym = data.gyms as unknown as { name: string; logo_path: string | null };
+  const gym = data.gyms as unknown as { name: string; logo_path: string | null; admission_fee: number };
   const logoUrl = gym.logo_path
     ? supabase.storage.from("gym-logos").getPublicUrl(gym.logo_path).data.publicUrl
     : null;
-  return { id: data.gym_id, name: gym.name, role: data.role, logoPath: gym.logo_path, logoUrl };
+  return { id: data.gym_id, name: gym.name, role: data.role, admissionFee: Number(gym.admission_fee), logoPath: gym.logo_path, logoUrl };
+}
+
+export async function updateGymAdmissionFee(admissionFee: number): Promise<number> {
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const gym = await getCurrentGym();
+  if (gym.role !== "owner") throw new Error("Only the gym owner can update the admission fee.");
+  if (!Number.isFinite(admissionFee) || admissionFee < 0) throw new Error("Admission fee must be zero or greater.");
+
+  const { data, error } = await supabase
+    .from("gyms")
+    .update({ admission_fee: admissionFee })
+    .eq("id", gym.id)
+    .select("admission_fee")
+    .single();
+  if (error) throw error;
+  return Number(data.admission_fee);
 }
 
 export async function uploadGymLogo(file: File): Promise<string> {

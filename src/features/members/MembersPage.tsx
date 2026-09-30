@@ -30,7 +30,7 @@ export function MembersPage() {
   const [checkInError, setCheckInError] = useState("");
   const router = useRouter();
   const { members, total, loading, error, addMember, saveMember, checkInMember, checkingInIds, checkedInIds } = useMembers(deferredSearch, page);
-  const { plans, loading: plansLoading, error: plansError } = useMembershipPlans(true);
+  const { plans, admissionFee, loading: plansLoading, error: plansError } = useMembershipPlans(true);
   const { width } = useWindowDimensions();
   const compact = width < 560;
 
@@ -131,6 +131,7 @@ export function MembersPage() {
           key={dialogMember?.id ?? "new-member"}
           member={dialogMember}
           plans={plans}
+          admissionFee={admissionFee}
           plansLoading={plansLoading}
           saving={saving}
           error={saveError}
@@ -190,9 +191,10 @@ function MemberRow({ member, compact, checkingIn, checkedIn, onEdit, onCheckIn }
   );
 }
 
-function MemberDialog({ member, plans, plansLoading, saving, error, onClose, onGoToPlans, onSave }: {
+function MemberDialog({ member, plans, admissionFee, plansLoading, saving, error, onClose, onGoToPlans, onSave }: {
   member: Member | null;
   plans: MembershipPlan[];
+  admissionFee: number | null;
   plansLoading: boolean;
   saving: boolean;
   error: string;
@@ -204,16 +206,25 @@ function MemberDialog({ member, plans, plansLoading, saving, error, onClose, onG
   const [email, setEmail] = useState(member?.email ?? "");
   const [phone, setPhone] = useState(member?.phone ?? "");
   const [planId, setPlanId] = useState(member?.planId ?? "");
+  const [admissionFeeEnabled, setAdmissionFeeEnabled] = useState<boolean | null>(null);
+  const [admissionFeeAmount, setAdmissionFeeAmount] = useState<string | null>(null);
   const [validationError, setValidationError] = useState("");
   const availablePlans = plans.filter((plan) => plan.isActive || plan.id === member?.planId);
   const selectedPlan = availablePlans.find((plan) => plan.id === planId) ?? availablePlans[0] ?? null;
+  const includeAdmissionFee = admissionFeeEnabled ?? (admissionFee !== null && admissionFee > 0);
+  const admissionFeeText = admissionFeeAmount ?? (admissionFee === null ? "" : String(admissionFee));
 
   const submit = () => {
     if (!name.trim()) { setValidationError("Enter the member’s name."); return; }
     if (email.trim() && !/^\S+@\S+\.\S+$/.test(email.trim())) { setValidationError("Enter a valid email address."); return; }
     if (!selectedPlan) { setValidationError("Create an active membership plan before adding a member."); return; }
+    const parsedAdmissionFee = includeAdmissionFee ? Number(admissionFeeText) : 0;
+    if (!member && includeAdmissionFee && (!Number.isFinite(parsedAdmissionFee) || parsedAdmissionFee <= 0)) {
+      setValidationError("Enter an admission fee greater than zero, or turn it off.");
+      return;
+    }
     setValidationError("");
-    void onSave({ name: name.trim(), email: email.trim(), phone: phone.trim(), planId: selectedPlan.id }, member?.id);
+    void onSave({ name: name.trim(), email: email.trim(), phone: phone.trim(), planId: selectedPlan.id, admissionFee: member ? undefined : parsedAdmissionFee }, member?.id);
   };
 
   return (
@@ -221,7 +232,7 @@ function MemberDialog({ member, plans, plansLoading, saving, error, onClose, onG
       <ScrollView style={styles.modalScroll} contentContainerStyle={styles.modalBackdrop} keyboardShouldPersistTaps="handled">
         <View style={styles.dialog}>
           <View style={styles.dialogHeader}>
-            <View><Text style={styles.dialogTitle}>{member ? "Edit member" : "Add member"}</Text><Text style={styles.dialogSubtitle}>{member ? "Update this member’s details and plan." : "Add a member and record their first payment."}</Text></View>
+            <View><Text style={styles.dialogTitle}>{member ? "Edit member" : "Add member"}</Text><Text style={styles.dialogSubtitle}>{member ? "Update this member’s details and plan." : "Add a member and record signup payments."}</Text></View>
             <Pressable accessibilityLabel="Close dialog" onPress={onClose} style={styles.closeButton}><X size={17} color={colors.muted} /></Pressable>
           </View>
           <DialogField label="Full name" value={name} onChangeText={setName} placeholder="Full name" />
@@ -245,7 +256,25 @@ function MemberDialog({ member, plans, plansLoading, saving, error, onClose, onG
               <Button variant="secondary" onPress={onGoToPlans}>Manage plans</Button>
             </View>
           )}
-          {!member && selectedPlan ? <Text style={styles.initialPayment}>Initial payment: {currency.format(selectedPlan.price)} · recorded as paid</Text> : null}
+          {!member ? (
+            <View style={styles.admissionFeeSection}>
+              <Pressable
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: includeAdmissionFee }}
+                onPress={() => setAdmissionFeeEnabled(!includeAdmissionFee)}
+                style={styles.admissionFeeToggle}
+              >
+                <View style={[styles.checkbox, includeAdmissionFee && styles.checkboxSelected]}>
+                  {includeAdmissionFee ? <Check size={12} color="#FFFFFF" /> : null}
+                </View>
+                <Text style={styles.admissionFeeToggleLabel}>Charge admission fee</Text>
+                <Text style={styles.admissionFeeToggleValue}>{includeAdmissionFee ? currency.format(Number(admissionFeeText) || 0) : "Waived"}</Text>
+              </Pressable>
+              {includeAdmissionFee ? <DialogField label="Admission fee" value={admissionFeeText} onChangeText={setAdmissionFeeAmount} placeholder="0.00" keyboardType="decimal-pad" /> : null}
+            </View>
+          ) : null}
+          {!member && selectedPlan ? <Text style={styles.initialPayment}>Membership payment: {currency.format(selectedPlan.price)} · recorded as paid</Text> : null}
+          {!member && includeAdmissionFee && Number(admissionFeeText) > 0 ? <Text style={styles.initialPayment}>Admission fee: {currency.format(Number(admissionFeeText))} · recorded as paid</Text> : null}
           {validationError || error ? <Text style={styles.errorText}>{validationError || error}</Text> : null}
           <View style={styles.dialogActions}>
             <Button variant="secondary" onPress={onClose}>Cancel</Button>
@@ -295,7 +324,7 @@ const styles = StyleSheet.create({
   checkInButton: { minHeight: 31, minWidth: 31, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 4, borderRadius: radii.small, paddingHorizontal: 5 },
   checkInCompleted: { backgroundColor: colors.greenSoft },
   disabledAction: { opacity: 0.5 },
-  checkInLabel: { color: colors.green, fontSize: 9, fontWeight: "600" },
+  checkInLabel: { color: colors.green, fontSize: 12, fontWeight: "600" },
   checkInLabelCompleted: { color: colors.green },
   editButton: { width: 30, height: 32, borderRadius: radii.small, alignItems: "center", justifyContent: "center" },
   skeletonList: { paddingHorizontal: 18, paddingVertical: 8, gap: 10 },
@@ -319,6 +348,12 @@ const styles = StyleSheet.create({
   planOptionSelected: { borderColor: colors.green, backgroundColor: colors.greenSoft },
   planOptionText: { color: colors.muted, fontSize: 10, fontWeight: "500" },
   planOptionTextSelected: { color: colors.green, fontWeight: "700" },
+  admissionFeeSection: { marginTop: 12 },
+  admissionFeeToggle: { minHeight: 38, flexDirection: "row", alignItems: "center", gap: 9 },
+  checkbox: { width: 18, height: 18, borderWidth: 1, borderColor: colors.muted, borderRadius: 3, alignItems: "center", justifyContent: "center" },
+  checkboxSelected: { borderColor: colors.green, backgroundColor: colors.green },
+  admissionFeeToggleLabel: { flex: 1, color: colors.ink, fontSize: 11, fontWeight: "600" },
+  admissionFeeToggleValue: { color: colors.muted, fontSize: 10, fontWeight: "600" },
   initialPayment: { color: colors.green, fontSize: 10, marginTop: 11 },
   dialogActions: { flexDirection: "row", justifyContent: "flex-end", gap: 9, marginTop: 20 },
 });

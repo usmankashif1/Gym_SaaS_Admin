@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
-import { recordMemberCheckIn } from "@/services/checkInService";
+import { listMemberCheckIns, recordMemberCheckIn } from "@/services/checkInService";
 import { createMember, listMembers, updateMember, type MemberInput } from "@/services/memberService";
 import type { Member } from "@/types/domain";
 
@@ -11,18 +11,29 @@ export function useMembers(search: string, page: number) {
   const [loadedKey, setLoadedKey] = useState("");
   const [failure, setFailure] = useState<{ key: string; message: string } | null>(null);
   const [checkingInIds, setCheckingInIds] = useState<Set<string>>(() => new Set());
-  const [checkedInIds, setCheckedInIds] = useState<Set<string>>(() => new Set());
+  const [checkedInState, setCheckedInState] = useState<{ key: string; ids: Set<string> }>({ key: "", ids: new Set() });
+  const [today, setToday] = useState(() => new Date().toISOString().slice(0, 10));
   const queryKey = `${search}\u0000${page}`;
+  const checkInKey = `${queryKey}\u0000${today}`;
   const loading = Boolean(supabase && loadedKey !== queryKey);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setToday(new Date().toISOString().slice(0, 10));
+    }, 60_000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (!supabase) return;
     let current = true;
     void listMembers(search, page)
-      .then((result) => {
+      .then(async (result) => {
+        const checkedInMemberIds = await listMemberCheckIns(result.items.map((member) => member.id), today);
         if (!current) return;
         setMembers(result.items);
         setTotal(result.total);
+        setCheckedInState({ key: checkInKey, ids: new Set(checkedInMemberIds) });
         setFailure(null);
         setLoadedKey(queryKey);
       })
@@ -32,7 +43,7 @@ export function useMembers(search: string, page: number) {
         setLoadedKey(queryKey);
       });
     return () => { current = false; };
-  }, [page, queryKey, search]);
+  }, [checkInKey, page, queryKey, search, today]);
 
   const addMember = async (input: MemberInput) => {
     const added = await createMember(input);
@@ -49,7 +60,10 @@ export function useMembers(search: string, page: number) {
     setCheckingInIds((current) => new Set(current).add(memberId));
     try {
       await recordMemberCheckIn(memberId);
-      setCheckedInIds((current) => new Set(current).add(memberId));
+      setCheckedInState((current) => ({
+        key: checkInKey,
+        ids: new Set([...(current.key === checkInKey ? current.ids : []), memberId]),
+      }));
     } finally {
       setCheckingInIds((current) => {
         const next = new Set(current);
@@ -68,6 +82,6 @@ export function useMembers(search: string, page: number) {
     saveMember,
     checkInMember,
     checkingInIds,
-    checkedInIds,
+    checkedInIds: checkedInState.key === checkInKey ? checkedInState.ids : new Set(),
   };
 }

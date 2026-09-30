@@ -106,6 +106,9 @@ function MetricCard({ label, value, note, icon, tone }: {
     );
 }
 
+
+
+
 function MemberPaymentList({ title, count, payments, view }: { title: string; count: number; payments: Payment[]; view: "today" | "overdue" }) {
     const router = useRouter();
     const visiblePayments = payments.slice(0, 5);
@@ -136,37 +139,171 @@ function MemberPaymentList({ title, count, payments, view }: { title: string; co
     );
 }
 
+
+
+
+
 function formatDate(value: string) {
     return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(`${value}T12:00:00`));
 }
 
 const styles = StyleSheet.create({
-    metricGrid: { gap: 16 },
-    metricRow: { flexDirection: "row", gap: 16 },
-    metricSurface: { flex: 1, minWidth: 0, borderRadius: 10, overflow: "hidden" },
-    metricSpacer: { flex: 1 },
-    metricSkeleton: { flex: 1, minWidth: 0, height: 168, borderRadius: 10 },
-    metricCard: { flex: 1, minHeight: 168, padding: 22, position: "relative", justifyContent: "space-between", borderWidth: 2, borderRadius: 10, borderColor: colors.sidebarMuted },
-    metricTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-    metricLabel: { flex: 1, color: colors.ink, fontSize: 14, fontWeight: "600" },
-    metricIcon: { width: 38, height: 38, borderRadius: 9, alignItems: "center", justifyContent: "center" },
-    metricValue: { color: colors.ink, fontSize: 32, lineHeight: 38, fontWeight: "800", marginTop: 18 },
-    metricNote: { color: colors.muted, fontSize: 12, lineHeight: 17, marginTop: 8 },
-    paymentLists: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-    paymentListCard: { flex: 1, minWidth: 300 },
-    paymentListHeader: { minHeight: 70, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
-    paymentListTitleGroup: { flex: 1, gap: 4 },
-    paymentListTitle: { color: colors.ink, fontSize: 14, fontWeight: "700" },
-    paymentListCount: { color: colors.muted, fontSize: 11 },
-    viewListButton: { minHeight: 34, flexDirection: "row", alignItems: "center", gap: 5, paddingHorizontal: 6 },
-    viewListLabel: { color: colors.green, fontSize: 11, fontWeight: "600" },
-    memberPaymentRow: { minHeight: 54, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 12 },
-    memberPaymentCopy: { flex: 1, minWidth: 0, gap: 4 },
-    memberPaymentName: { color: colors.ink, fontSize: 12, fontWeight: "600" },
-    memberPaymentPlan: { color: colors.muted, fontSize: 10 },
-    memberPaymentAmount: { color: colors.ink, fontSize: 11, fontWeight: "600" },
-    noMemberPayments: { color: colors.muted, fontSize: 11, paddingHorizontal: 18, paddingBottom: 18 },
-    moreMembers: { color: colors.muted, fontSize: 10, paddingHorizontal: 18, paddingVertical: 10, borderTopWidth: 1, borderTopColor: colors.line },
-    listSkeleton: { flex: 1, minWidth: 300, height: 250 },
-    errorText: { color: colors.coral, fontSize: 12 },
+    metricGrid: {
+        gap: 16
+    },
+    metricRow: {
+        flexDirection: "row",
+        gap: 16
+    },
+    metricSurface: {
+        flex: 1,
+        minWidth: 0,
+        borderRadius: 10,
+        overflow: "hidden"
+    },
+    metricSpacer: {
+        flex: 1
+    },
+    metricSkeleton: {
+        flex: 1,
+        minWidth: 0,
+        height: 168,
+        borderRadius: 10
+    },
+    metricCard: {
+        flex: 1,
+        minHeight: 168,
+        padding: 22,
+        position: "relative",
+        justifyContent: "space-between",
+        borderWidth: 2,
+        borderRadius: 10,
+        borderColor: colors.sidebarMuted
+    },
+    metricTop: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12
+    },
+    metricLabel: {
+        flex: 1,
+        color: colors.ink,
+        fontSize: 14,
+        fontWeight: "600"
+    },
+    metricIcon: {
+        width: 38,
+        height: 38,
+        borderRadius: 9,
+        alignItems: "center",
+        justifyContent: "center"
+    },
+    metricValue: {
+        color: colors.ink,
+        fontSize: 32,
+        lineHeight: 38,
+        fontWeight: "800",
+        marginTop: 18
+    },
+    metricNote: {
+        color: colors.muted,
+        fontSize: 12,
+        lineHeight: 17,
+        marginTop: 8
+    },
+    paymentLists: {
+        flexDirection: "row",
+        flexWrap: "wrap",
+        gap: 16
+    },
+    paymentListCard: {
+        flex: 1,
+        minWidth: 300
+    },
+    paymentListHeader: {
+        minHeight: 70,
+        paddingHorizontal: 18,
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 12
+    },
+    paymentListTitleGroup: {
+        flex: 1,
+        gap: 4
+    },
+    paymentListTitle: {
+        color: colors.ink,
+        fontSize: 16,
+        fontWeight: "700"
+    },
+    paymentListCount: {
+        color: colors.muted,
+        fontSize: 12
+    },
+    viewListButton: {
+        minHeight: 34,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 5,
+        paddingHorizontal: 6
+    },
+    viewListLabel: {
+        color: colors.green,
+        fontSize: 12,
+        fontWeight: "600"
+    },
+    memberPaymentRow: {
+        minHeight: 54,
+        borderTopWidth: 1,
+        borderTopColor: colors.line,
+        paddingHorizontal: 18,
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 12
+    },
+    memberPaymentCopy: {
+        flex: 1,
+        minWidth: 0,
+        gap: 4
+    },
+    memberPaymentName: {
+        color: colors.ink,
+        fontSize: 12,
+        fontWeight: "600"
+    },
+    memberPaymentPlan: {
+        color: colors.muted,
+        fontSize: 12
+    },
+    memberPaymentAmount: {
+        color: colors.ink,
+        fontSize: 12,
+        fontWeight: "600"
+    },
+    noMemberPayments: {
+        color: colors.muted,
+        fontSize: 12,
+        paddingHorizontal: 18,
+        paddingBottom: 18
+    },
+    moreMembers: {
+        color: colors.muted,
+        fontSize: 12,
+        paddingHorizontal: 18,
+        paddingVertical: 10,
+        borderTopWidth: 1,
+        borderTopColor: colors.line
+    },
+    listSkeleton: {
+        flex: 1,
+        minWidth: 300,
+        height: 250
+    },
+    errorText: {
+        color: colors.coral,
+        fontSize: 12
+    },
+
 });

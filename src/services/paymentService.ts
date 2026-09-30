@@ -13,6 +13,7 @@ function mapPayment(row: any): Payment {
     memberId: row.member_id,
     memberName: `${member?.first_name ?? "Member"} ${member?.last_name ?? ""}`.trim(),
     membershipPlanName: membershipPlan?.name ?? member?.plan_name ?? "",
+    type: row.payment_type,
     amount: Number(row.amount),
     dueDate,
     paidAt: row.paid_at,

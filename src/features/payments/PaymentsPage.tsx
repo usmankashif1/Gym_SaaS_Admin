@@ -88,6 +88,8 @@ export function PaymentsPage() {
     );
 }
 
+
+
 function PaymentTableHeader({ history }: { history: boolean }) {
     return (
         <View style={styles.tableHeader}>
@@ -100,12 +102,13 @@ function PaymentTableHeader({ history }: { history: boolean }) {
     );
 }
 
+
 function PaymentRow({ payment, compact, history, busy, onRecord }: { payment: Payment; compact: boolean; history: boolean; busy: boolean; onRecord: () => void }) {
     return (
         <View style={styles.paymentRow}>
             <View style={styles.paymentMember}>
                 <Text numberOfLines={1} style={styles.memberName}>{payment.memberName}</Text>
-                {payment.membershipPlanName ? <Text numberOfLines={1} style={styles.planName}>{payment.membershipPlanName}</Text> : null}
+                {payment.type === "admission" ? <Text numberOfLines={1} style={styles.planName}>Admission fee</Text> : payment.membershipPlanName ? <Text numberOfLines={1} style={styles.planName}>{payment.membershipPlanName}</Text> : null}
                 {compact ? <Text style={styles.mobileInfo}>{history ? "Paid" : payment.status === "overdue" ? "Overdue" : "Due today"} · {formatDate(history && payment.paidAt ? payment.paidAt.slice(0, 10) : payment.dueDate)}</Text> : null}
             </View>
             {!compact ? <Text style={[styles.cellText, styles.dueDate]}>{formatDate(history && payment.paidAt ? payment.paidAt.slice(0, 10) : payment.dueDate)}</Text> : null}
@@ -128,7 +131,13 @@ function formatDate(value: string) {
 
 const styles = StyleSheet.create({
     tabRow: { flexDirection: "row", alignSelf: "flex-start", borderBottomWidth: 1, borderBottomColor: colors.line, gap: 22, marginTop: -5 },
-    tab: { minHeight: 40, justifyContent: "center", borderBottomWidth: 2, borderBottomColor: "transparent", paddingHorizontal: 1 },
+    tab: {
+        minHeight: 40,
+        justifyContent: "center",
+        borderBottomWidth: 2,
+        borderBottomColor: "transparent",
+        paddingHorizontal: 1
+    },
     tabSelected: { borderBottomColor: colors.green },
     tabText: { color: colors.muted, fontSize: 12, fontWeight: "500" },
     tabTextSelected: { color: colors.green, fontWeight: "700" },

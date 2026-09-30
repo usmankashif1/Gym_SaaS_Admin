@@ -3,7 +3,7 @@ import { supabase } from "@/lib/supabase";
 import { getCurrentGym } from "@/services/gymService";
 import type { Member, MembershipPlan } from "@/types/domain";
 
-export type MemberInput = Pick<Member, "name" | "email" | "phone"> & { planId: string };
+export type MemberInput = Pick<Member, "name" | "email" | "phone"> & { planId: string; admissionFee?: number };
 
 type MemberRow = {
   id: string;
@@ -60,6 +60,7 @@ export async function createMember(input: MemberInput): Promise<Member> {
     p_last_name: lastNameParts.join(" "),
     p_email: input.email.trim() || null,
     p_phone: input.phone.trim() || null,
+    p_admission_fee: input.admissionFee ?? null,
   });
   if (error) throw error;
   const created = data as Pick<MemberRow, "id">;

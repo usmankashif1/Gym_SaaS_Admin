@@ -7,6 +7,7 @@ import type { MembershipPlan } from "@/types/domain";
 export function useMembershipPlans(includeInactive = false) {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [canManage, setCanManage] = useState(false);
+  const [admissionFee, setAdmissionFee] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
 
@@ -17,6 +18,7 @@ export function useMembershipPlans(includeInactive = false) {
         if (!current) return;
         setPlans(result.plans);
         setCanManage(result.canManage);
+        setAdmissionFee(result.admissionFee);
         setError("");
         setLoaded(true);
       })
@@ -35,5 +37,5 @@ export function useMembershipPlans(includeInactive = false) {
     });
   };
 
-  return { plans, canManage, loading: !loaded, error, replacePlan };
+  return { plans, canManage, admissionFee, setAdmissionFee, loading: !loaded, error, replacePlan };
 }

@@ -20,13 +20,14 @@ export type Payment = {
   memberId: string;
   memberName: string;
   membershipPlanName: string;
+  type: "membership" | "admission";
   amount: number;
   dueDate: string;
   paidAt: string | null;
   status: PaymentStatus;
 };
 
-export type GymContext = { id: string; name: string; role: string; logoPath: string | null; logoUrl: string | null };
+export type GymContext = { id: string; name: string; role: string; admissionFee: number; logoPath: string | null; logoUrl: string | null };
 
 export type MembershipPlan = {
   id: string;
@@ -39,6 +40,5 @@ export type MembershipPlan = {
 export type GymSubscription = {
   planKey: string;
   status: string;
-  memberLimit: number;
   currentPeriodEnd: string;
 };

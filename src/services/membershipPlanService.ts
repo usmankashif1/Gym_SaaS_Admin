@@ -9,7 +9,7 @@ function mapPlan(row: PlanRow): MembershipPlan {
   return { id: row.id, name: row.name, price: Number(row.price), isActive: row.is_active, createdAt: row.created_at };
 }
 
-export async function listMembershipPlans(includeInactive = false): Promise<{ plans: MembershipPlan[]; canManage: boolean }> {
+export async function listMembershipPlans(includeInactive = false): Promise<{ plans: MembershipPlan[]; canManage: boolean; admissionFee: number }> {
   if (!supabase) throw new Error("Supabase is not configured.");
   const gym = await getCurrentGym();
   let query = supabase
@@ -20,7 +20,7 @@ export async function listMembershipPlans(includeInactive = false): Promise<{ pl
   if (!includeInactive) query = query.eq("is_active", true);
   const { data, error } = await query;
   if (error) throw error;
-  return { plans: data.map((row) => mapPlan(row as PlanRow)), canManage: gym.role === "owner" };
+  return { plans: data.map((row) => mapPlan(row as PlanRow)), canManage: gym.role === "owner", admissionFee: gym.admissionFee };
 }
 
 export async function createMembershipPlan(input: PlanInput): Promise<MembershipPlan> {

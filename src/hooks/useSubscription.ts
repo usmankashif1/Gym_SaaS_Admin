@@ -1,23 +1,20 @@
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 
-import { getDashboardSummary } from "@/services/dashboardService";
 import { getSubscription } from "@/services/subscriptionService";
 import type { GymSubscription } from "@/types/domain";
 
 export function useSubscription() {
   const [subscription, setSubscription] = useState<GymSubscription | null>(null);
-  const [activeMembers, setActiveMembers] = useState(0);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
 
   useFocusEffect(useCallback(() => {
     let current = true;
-    void Promise.all([getSubscription(), getDashboardSummary()])
-      .then(([nextSubscription, summary]) => {
+    void getSubscription()
+      .then((nextSubscription) => {
         if (!current) return;
         setSubscription(nextSubscription);
-        setActiveMembers(summary.activeMembers);
         setError("");
         setLoaded(true);
       })
@@ -29,5 +26,5 @@ export function useSubscription() {
     return () => { current = false; };
   }, []));
 
-  return { subscription, activeMembers, loading: !loaded, error };
+  return { subscription, loading: !loaded, error };
 }

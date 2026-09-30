@@ -25,6 +25,10 @@ export function StatusBadge({ label, tone }: StatusBadgeProps) {
 }
 
 const styles = StyleSheet.create({
-  badge: { alignSelf: "flex-start", paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.small },
-  label: { fontSize: 11, lineHeight: 15, fontWeight: "600" },
+  badge: {
+    alignSelf: "center", paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.small,
+    alignItems: "center"
+
+  },
+  label: { fontSize: 12, lineHeight: 15, fontWeight: "600" },
 });
