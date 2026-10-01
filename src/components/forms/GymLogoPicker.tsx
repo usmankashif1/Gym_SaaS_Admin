@@ -65,14 +65,14 @@ export function GymLogoPicker({ file, currentLogoUrl = null, onChange }: GymLogo
 const styles = StyleSheet.create({
   section: { gap: 7, marginBottom: 16 },
   label: { color: colors.ink, fontSize: 12, fontWeight: "600" },
-  optional: { color: colors.muted, fontSize: 10, fontWeight: "400" },
+  optional: { color: colors.muted, fontSize: 12, fontWeight: "400" },
   row: { flexDirection: "row", alignItems: "center", gap: 7 },
   picker: { flex: 1, minWidth: 0, minHeight: 56, borderWidth: 1, borderColor: "#DDE3DF", borderStyle: "dashed", borderRadius: radii.small, padding: 8, flexDirection: "row", alignItems: "center", gap: 9 },
   preview: { width: 38, height: 38, borderRadius: 6, alignItems: "center", justifyContent: "center", overflow: "hidden", backgroundColor: colors.greenSoft },
   image: { width: "100%", height: "100%", resizeMode: "cover" },
   copy: { flex: 1, minWidth: 0, gap: 4 },
-  title: { color: colors.ink, fontSize: 10, fontWeight: "600" },
-  hint: { color: colors.muted, fontSize: 9 },
+  title: { color: colors.ink, fontSize: 12, fontWeight: "600" },
+  hint: { color: colors.muted, fontSize: 12 },
   clear: { width: 28, height: 28, alignItems: "center", justifyContent: "center" },
-  error: { color: colors.coral, fontSize: 10 },
+  error: { color: colors.coral, fontSize: 12 },
 });

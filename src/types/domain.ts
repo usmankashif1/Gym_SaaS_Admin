@@ -20,7 +20,8 @@ export type Payment = {
   memberId: string;
   memberName: string;
   membershipPlanName: string;
-  type: "membership" | "admission";
+  type: "membership" | "admission" | "combined";
+  admissionFeeAmount?: number;
   amount: number;
   dueDate: string;
   paidAt: string | null;

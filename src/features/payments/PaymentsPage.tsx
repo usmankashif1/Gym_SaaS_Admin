@@ -108,7 +108,11 @@ function PaymentRow({ payment, compact, history, busy, onRecord }: { payment: Pa
         <View style={styles.paymentRow}>
             <View style={styles.paymentMember}>
                 <Text numberOfLines={1} style={styles.memberName}>{payment.memberName}</Text>
-                {payment.type === "admission" ? <Text numberOfLines={1} style={styles.planName}>Admission fee</Text> : payment.membershipPlanName ? <Text numberOfLines={1} style={styles.planName}>{payment.membershipPlanName}</Text> : null}
+                {payment.type === "combined" ? (
+                    <Text numberOfLines={1} style={styles.planName}>
+                        {payment.membershipPlanName || "Membership"} + Admission fee {currency.format(payment.admissionFeeAmount ?? 0)}
+                    </Text>
+                ) : payment.type === "admission" ? <Text numberOfLines={1} style={styles.planName}>Admission fee</Text> : payment.membershipPlanName ? <Text numberOfLines={1} style={styles.planName}>{payment.membershipPlanName}</Text> : null}
                 {compact ? <Text style={styles.mobileInfo}>{history ? "Paid" : payment.status === "overdue" ? "Overdue" : "Due today"} · {formatDate(history && payment.paidAt ? payment.paidAt.slice(0, 10) : payment.dueDate)}</Text> : null}
             </View>
             {!compact ? <Text style={[styles.cellText, styles.dueDate]}>{formatDate(history && payment.paidAt ? payment.paidAt.slice(0, 10) : payment.dueDate)}</Text> : null}
@@ -144,11 +148,11 @@ const styles = StyleSheet.create({
     listHeader: { minHeight: 75, paddingHorizontal: 18, flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 14 },
     listHeaderCopy: { gap: 4 },
     listTitle: { color: colors.ink, fontSize: 14, fontWeight: "700" },
-    listSubtitle: { color: colors.muted, fontSize: 10 },
+    listSubtitle: { color: colors.muted, fontSize: 12 },
     headerCountSkeleton: { width: 75, height: 12, marginTop: 2 },
     headerBadgeSkeleton: { width: 62, height: 23 },
     tableHeader: { minHeight: 37, backgroundColor: "#F8FAF8", borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.line, paddingHorizontal: 18, flexDirection: "row", alignItems: "center" },
-    headerCell: { color: colors.muted, fontSize: 9, fontWeight: "700", letterSpacing: 0.6 },
+    headerCell: { color: colors.muted, fontSize: 12, fontWeight: "700", letterSpacing: 0.6 },
     paymentMember: { flex: 1, minWidth: 100 },
     dueDate: { width: 115 },
     amount: { width: 88 },
@@ -156,12 +160,12 @@ const styles = StyleSheet.create({
     actionSpace: { width: 138, alignItems: "flex-end" },
     paymentRow: { minHeight: 64, borderBottomWidth: 1, borderBottomColor: "#EEF1EF", paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 9 },
     memberName: { color: colors.ink, fontSize: 12, fontWeight: "600" },
-    planName: { color: colors.muted, fontSize: 10, marginTop: 3 },
-    mobileInfo: { color: colors.muted, fontSize: 9, marginTop: 4 },
-    cellText: { color: colors.ink, fontSize: 11 },
+    planName: { color: colors.muted, fontSize: 12, marginTop: 3 },
+    mobileInfo: { color: colors.muted, fontSize: 12, marginTop: 4 },
+    cellText: { color: colors.ink, fontSize: 12 },
     amountText: { color: colors.ink, fontSize: 12, fontWeight: "600" },
-    recordedLabel: { color: colors.muted, fontSize: 10 },
-    errorText: { color: colors.coral, fontSize: 11, paddingHorizontal: 18, paddingBottom: 8 },
+    recordedLabel: { color: colors.muted, fontSize: 12 },
+    errorText: { color: colors.coral, fontSize: 12, paddingHorizontal: 18, paddingBottom: 8 },
     skeletonList: { paddingHorizontal: 18, paddingVertical: 8, gap: 10 },
     paymentSkeleton: { height: 47 },
 });

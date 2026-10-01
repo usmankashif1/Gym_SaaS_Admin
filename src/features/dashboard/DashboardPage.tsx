@@ -9,7 +9,7 @@ import { useDashboard } from "@/hooks/useDashboard";
 import { colors } from "@/theme/tokens";
 import type { Payment } from "@/types/domain";
 
-const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
 
 export function DashboardPage() {
     const { summary, dueTodayPayments, overduePayments, dueTodayCount, overdueCount, loading, error } = useDashboard();

@@ -11,9 +11,10 @@ function mapPayment(row: any): Payment {
   return {
     id: row.id,
     memberId: row.member_id,
-    memberName: `${member?.first_name ?? "Member"} ${member?.last_name ?? ""}`.trim(),
-    membershipPlanName: membershipPlan?.name ?? member?.plan_name ?? "",
+    memberName: `${member?.first_name ?? row.first_name ?? "Member"} ${member?.last_name ?? row.last_name ?? ""}`.trim(),
+    membershipPlanName: row.membership_plan_name ?? membershipPlan?.name ?? member?.plan_name ?? row.plan_name ?? "",
     type: row.payment_type,
+    admissionFeeAmount: row.admission_fee_amount == null ? undefined : Number(row.admission_fee_amount),
     amount: Number(row.amount),
     dueDate,
     paidAt: row.paid_at,
@@ -26,9 +27,19 @@ export async function listPayments(filter: PaymentStatus | "all" = "all", page =
   const { error: generationError } = await supabase.rpc("generate_due_membership_payments");
   if (generationError) throw generationError;
   const gym = await getCurrentGym();
+  if (filter === "paid") {
+    const { data, error, count } = await supabase
+      .from("payment_history")
+      .select("*", { count: "exact" })
+      .eq("gym_id", gym.id)
+      .order("due_date", { ascending: false })
+      .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    if (error) throw error;
+    return { items: data.map(mapPayment), total: count ?? 0 };
+  }
+
   let query = supabase.from("payments").select("*, members(first_name,last_name,plan_name,membership_plans(name))", { count: "exact" }).eq("gym_id", gym.id).order("due_date", { ascending: false }).range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
-  if (filter === "paid") query = query.eq("status", "paid");
-  else if (filter === "due") query = query.eq("status", "pending").eq("due_date", new Date().toISOString().slice(0, 10));
+  if (filter === "due") query = query.eq("status", "pending").eq("due_date", new Date().toISOString().slice(0, 10));
   else if (filter === "overdue") query = query.eq("status", "pending").lt("due_date", new Date().toISOString().slice(0, 10));
   const { data, error, count } = await query;
   if (error) throw error;

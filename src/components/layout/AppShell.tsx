@@ -12,8 +12,10 @@ const navigation = [
   { label: "Dashboard", href: "/", Icon: LayoutDashboard },
   { label: "Members", href: "/members", Icon: UsersRound },
   { label: "Payments", href: "/payments", Icon: CreditCard },
-  { label: "Subscription", href: "/subscription", Icon: WalletCards },
+  { label: "Revenue", href: "/revenue", Icon: WalletCards },
+  { label: "Plans & fees", href: "/subscription", Icon: CreditCard },
 ] as const;
+const workspacePlanNavigation = { label: "Workspace plan", href: "/workspace-subscription", Icon: WalletCards } as const;
 
 type AppShellProps = PropsWithChildren<{
   title: string;
@@ -119,6 +121,15 @@ function Sidebar({ pathname, gymName, gymLogoUrl, email, canManageGym, onOpenSet
           <Text numberOfLines={1} ellipsizeMode="tail" style={styles.accountEmail}>{email}</Text>
           {canManageGym ? <Pressable accessibilityLabel="Gym settings" accessibilityRole="button" onPress={onOpenSettings} style={styles.settingsButton}><Settings size={16} color={colors.sidebarMuted} /></Pressable> : null}
         </View>
+        <Pressable
+          accessibilityRole="link"
+          accessibilityState={{ selected: pathname.startsWith(workspacePlanNavigation.href) }}
+          onPress={() => router.push(workspacePlanNavigation.href)}
+          style={[styles.navItem, pathname.startsWith(workspacePlanNavigation.href) && styles.navItemSelected]}
+        >
+          <workspacePlanNavigation.Icon size={18} color={pathname.startsWith(workspacePlanNavigation.href) ? "#C4E8D0" : colors.sidebarMuted} strokeWidth={1.8} />
+          <Text style={[styles.navLabel, pathname.startsWith(workspacePlanNavigation.href) && styles.navLabelSelected]}>{workspacePlanNavigation.label}</Text>
+        </Pressable>
         <Pressable accessibilityRole="button" onPress={onSignOut} style={({ pressed }) => [styles.signOutButton, pressed && styles.signOutPressed]}>
           <LogOut size={16} color="#D8948E" />
           <Text style={styles.signOutLabel}>Sign out</Text>
@@ -132,15 +143,17 @@ function MobileNavigation({ pathname }: { pathname: string }) {
   const router = useRouter();
   return (
     <View style={styles.mobileNavigation}>
-      {navigation.map(({ label, href, Icon }) => {
-        const selected = href === "/" ? pathname === "/" : pathname.startsWith(href);
-        return (
-          <Pressable key={href} accessibilityRole="link" onPress={() => router.push(href)} style={styles.mobileNavItem}>
-            <Icon size={19} color={selected ? colors.green : colors.muted} strokeWidth={1.8} />
-            <Text style={[styles.mobileNavLabel, selected && styles.mobileNavLabelSelected]}>{label}</Text>
-          </Pressable>
-        );
-      })}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.mobileNavItems}>
+        {[...navigation, workspacePlanNavigation].map(({ label, href, Icon }) => {
+          const selected = href === "/" ? pathname === "/" : pathname.startsWith(href);
+          return (
+            <Pressable key={href} accessibilityRole="link" onPress={() => router.push(href)} style={styles.mobileNavItem}>
+              <Icon size={19} color={selected ? colors.green : colors.muted} strokeWidth={1.8} />
+              <Text numberOfLines={1} style={[styles.mobileNavLabel, selected && styles.mobileNavLabelSelected]}>{label}</Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
@@ -155,17 +168,17 @@ const styles = StyleSheet.create({
   workspaceInitial: { color: colors.sidebar, fontSize: 20, fontWeight: "800" },
   workspaceName: { flex: 1, minWidth: 0, color: "#F4F6F4", fontSize: 16, fontWeight: "700" },
   compactWorkspaceName: { color: colors.ink, fontSize: 16 },
-  navCaption: { color: "#809087", fontSize: 10, fontWeight: "700", letterSpacing: 1, paddingHorizontal: 9, marginBottom: 11 },
+  navCaption: { color: "#809087", fontSize: 12, fontWeight: "700", letterSpacing: 1, paddingHorizontal: 9, marginBottom: 11 },
   navList: { gap: 5 },
   navItem: { minHeight: 43, borderRadius: radii.small, paddingHorizontal: 10, flexDirection: "row", alignItems: "center", gap: 12 },
   navItemSelected: { backgroundColor: "#283A31" },
-  navLabel: { color: colors.sidebarMuted, fontSize: 13, fontWeight: "500" },
+  navLabel: { color: colors.sidebarMuted, fontSize: 14, fontWeight: "500" },
   navLabelSelected: { color: "#F2F7F3", fontWeight: "600" },
   sidebarFooter: { marginTop: "auto", borderTopColor: "#34443B", borderTopWidth: 1, paddingTop: 16, gap: 9 },
-  poweredBy: { color: "#87958D", fontSize: 10, paddingHorizontal: 3 },
+  poweredBy: { color: "#87958D", fontSize: 12, paddingHorizontal: 3 },
   poweredBrand: { color: "#A9D8B8", fontWeight: "700" },
   accountCard: { minHeight: 4, flexDirection: "row", alignItems: "center", gap: 6, backgroundColor: "rgba(8, 15, 11, 0.32)", borderWidth: 1, borderColor: "#394A40", borderRadius: 8, paddingLeft: 9, paddingRight: 4 },
-  accountEmail: { flex: 1, minWidth: 0, color: "#E2E9E4", fontSize: 11, fontWeight: "500" },
+  accountEmail: { flex: 1, minWidth: 0, color: "#E2E9E4", fontSize: 12, fontWeight: "500" },
   settingsButton: { width: 34, height: 34, alignItems: "center", justifyContent: "center", borderRadius: 6 },
   signOutButton: { width: "100%", minHeight: 40, flexDirection: "row", alignItems: "center", gap: 10, borderRadius: 7, paddingHorizontal: 11 },
   signOutPressed: { backgroundColor: "rgba(191, 82, 74, 0.16)" },
@@ -174,11 +187,12 @@ const styles = StyleSheet.create({
   scrollContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: 34, paddingTop: 30, paddingBottom: 42, gap: 24 },
   pageHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 },
   headingCopy: { flex: 1, gap: 5 },
-  title: { color: colors.ink, fontSize: 27, lineHeight: 34, fontWeight: "700" },
-  subtitle: { color: colors.muted, fontSize: 13, lineHeight: 19 },
+  title: { color: colors.ink, fontSize: 28, lineHeight: 34, fontWeight: "700" },
+  subtitle: { color: colors.muted, fontSize: 14, lineHeight: 19 },
   headerAction: { alignItems: "flex-end" },
-  mobileNavigation: { minHeight: 64, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line, flexDirection: "row", justifyContent: "space-around", alignItems: "center", paddingHorizontal: 4, paddingBottom: 4 },
-  mobileNavItem: { flex: 1, alignItems: "center", justifyContent: "center", gap: 4, minHeight: 58 },
-  mobileNavLabel: { color: colors.muted, fontSize: 9, fontWeight: "500" },
+  mobileNavigation: { minHeight: 64, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line, paddingBottom: 4 },
+  mobileNavItems: { minHeight: 64, alignItems: "center", gap: 2, paddingHorizontal: 4 },
+  mobileNavItem: { width: 96, alignItems: "center", justifyContent: "center", gap: 4, minHeight: 58 },
+  mobileNavLabel: { maxWidth: 92, color: colors.muted, fontSize: 11, fontWeight: "500" },
   mobileNavLabelSelected: { color: colors.green, fontWeight: "700" },
 });

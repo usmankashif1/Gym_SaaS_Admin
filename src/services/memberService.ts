@@ -4,6 +4,7 @@ import { getCurrentGym } from "@/services/gymService";
 import type { Member, MembershipPlan } from "@/types/domain";
 
 export type MemberInput = Pick<Member, "name" | "email" | "phone"> & { planId: string; admissionFee?: number };
+export type NewMemberInput = MemberInput & { signupDate: string };
 
 type MemberRow = {
   id: string;
@@ -51,7 +52,7 @@ export async function listMembers(search = "", page = 0): Promise<{ items: Membe
   return { items: data.map((row) => mapMember(row as MemberRow)), total: count ?? 0 };
 }
 
-export async function createMember(input: MemberInput): Promise<Member> {
+export async function createMember(input: NewMemberInput): Promise<Member> {
   if (!supabase) throw new Error("Supabase is not configured.");
   const [firstName, ...lastNameParts] = input.name.trim().split(/\s+/);
   const { data, error } = await supabase.rpc("create_member_with_initial_payment", {
@@ -61,6 +62,7 @@ export async function createMember(input: MemberInput): Promise<Member> {
     p_email: input.email.trim() || null,
     p_phone: input.phone.trim() || null,
     p_admission_fee: input.admissionFee ?? null,
+    p_signup_date: input.signupDate,
   });
   if (error) throw error;
   const created = data as Pick<MemberRow, "id">;
@@ -102,4 +104,15 @@ export async function updateMember(memberId: string, input: MemberInput): Promis
     .single();
   if (error) throw error;
   return mapMember(data as MemberRow);
+}
+
+export async function deleteMember(memberId: string): Promise<void> {
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const gym = await getCurrentGym();
+  const { error } = await supabase
+    .from("members")
+    .delete()
+    .eq("id", memberId)
+    .eq("gym_id", gym.id);
+  if (error) throw error;
 }

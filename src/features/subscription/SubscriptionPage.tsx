@@ -1,4 +1,4 @@
-import { CalendarDays, CreditCard, Pause, Pencil, Play, Plus, X } from "lucide-react-native";
+import { CreditCard, Pause, Pencil, Play, Plus, X } from "lucide-react-native";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
@@ -9,7 +9,6 @@ import { Skeleton } from "@/components/ui/Skeleton";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { Surface } from "@/components/ui/Surface";
 import { useMembershipPlans } from "@/hooks/useMembershipPlans";
-import { useSubscription } from "@/hooks/useSubscription";
 import { updateGymAdmissionFee } from "@/services/gymService";
 import { createMembershipPlan, setMembershipPlanActive, updateMembershipPlan } from "@/services/membershipPlanService";
 import { colors, radii } from "@/theme/tokens";
@@ -19,23 +18,15 @@ const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "
 type PlanInput = Pick<MembershipPlan, "name" | "price">;
 
 export function SubscriptionPage() {
-  const { subscription, loading, error } = useSubscription();
   const { plans, canManage, admissionFee, setAdmissionFee, loading: plansLoading, error: plansError, replacePlan } = useMembershipPlans(true);
   const [editingPlan, setEditingPlan] = useState<MembershipPlan | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [actionError, setActionError] = useState("");
+  const [editingAdmissionFee, setEditingAdmissionFee] = useState(false);
   const [admissionFeeDraft, setAdmissionFeeDraft] = useState<string | null>(null);
   const [savingAdmissionFee, setSavingAdmissionFee] = useState(false);
   const [admissionFeeError, setAdmissionFeeError] = useState("");
-  if (error) {
-    return (
-      <AppShell title="Subscription" subtitle="Workspace billing and member plans.">
-        <Text style={styles.error}>{error}</Text>
-      </AppShell>
-    );
-  }
-
   const savePlan = async (input: PlanInput, planId?: string) => {
     setSaving(true);
     setActionError("");
@@ -62,8 +53,9 @@ export function SubscriptionPage() {
   };
 
   const saveAdmissionFee = async () => {
-    const parsedFee = Number(admissionFeeDraft ?? admissionFee ?? 0);
-    if (!Number.isFinite(parsedFee) || parsedFee < 0) {
+    const draft = admissionFeeDraft?.trim() ?? "";
+    const parsedFee = Number(draft);
+    if (!draft || !Number.isFinite(parsedFee) || parsedFee < 0) {
       setAdmissionFeeError("Enter a fee of zero or greater.");
       return;
     }
@@ -73,6 +65,7 @@ export function SubscriptionPage() {
       const savedFee = await updateGymAdmissionFee(parsedFee);
       setAdmissionFee(savedFee);
       setAdmissionFeeDraft(null);
+      setEditingAdmissionFee(false);
     } catch (caught) {
       setAdmissionFeeError(caught instanceof Error ? caught.message : "Could not save the admission fee.");
     } finally {
@@ -81,32 +74,13 @@ export function SubscriptionPage() {
   };
 
   return (
-    <AppShell title="Subscription" subtitle="Workspace billing and member plans.">
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      {loading ? (
-        <View style={styles.loadingBlocks}><Skeleton style={styles.workspaceSkeleton} /></View>
-      ) : (
-        <>
-          <View style={styles.primaryGrid}>
-            <WorkspacePlan subscription={subscription} />
-            <Surface style={styles.billingPanel}>
-              <View style={styles.billingIcon}><CalendarDays size={17} color={colors.blue} /></View>
-              <Text style={styles.billingTitle}>Next renewal</Text>
-              <Text style={styles.renewalDate}>{subscription ? formatDate(subscription.currentPeriodEnd) : "Not scheduled"}</Text>
-              <Text style={styles.billingNote}>{subscription ? `Workspace status: ${subscription.status.replaceAll("_", " ")}` : "No workspace subscription record."}</Text>
-              <View style={styles.divider} />
-              <View style={styles.billingMeta}><CreditCard size={15} color={colors.muted} /><Text style={styles.metaText}>Billing is managed by the workspace owner.</Text></View>
-            </Surface>
-          </View>
-        </>
-      )}
-
+    <AppShell title="Plans & fees" subtitle="Manage member plans and signup admission fees.">
       <Surface style={styles.admissionFeePanel}>
         <View style={styles.admissionFeeHeading}>
           <Text style={styles.sectionTitle}>Admission fee</Text>
           <Text style={styles.sectionDescription}>Default one-time fee for new members. Set to zero to disable it.</Text>
         </View>
-        {canManage ? (
+        {canManage && editingAdmissionFee ? (
           <View style={styles.admissionFeeControls}>
             <TextInput
               accessibilityLabel="Default admission fee"
@@ -120,8 +94,24 @@ export function SubscriptionPage() {
             <Button disabled={plansLoading || savingAdmissionFee || admissionFee === null} onPress={() => void saveAdmissionFee()}>
               {savingAdmissionFee ? "Saving..." : "Save fee"}
             </Button>
+            <Button variant="secondary" disabled={savingAdmissionFee} onPress={() => { setAdmissionFeeDraft(null); setAdmissionFeeError(""); setEditingAdmissionFee(false); }}>
+              Cancel
+            </Button>
           </View>
-        ) : <Text style={styles.admissionFeeValue}>{admissionFee === null ? "Loading..." : currency.format(admissionFee)}</Text>}
+        ) : (
+          <View style={styles.admissionFeeControls}>
+            <Text style={styles.admissionFeeValue}>{admissionFee === null ? "Loading..." : currency.format(admissionFee)}</Text>
+            {canManage ? (
+              <Button
+                disabled={plansLoading || admissionFee === null}
+                icon={<Pencil size={15} color="#FFFFFF" />}
+                onPress={() => { setAdmissionFeeDraft(String(admissionFee)); setAdmissionFeeError(""); setEditingAdmissionFee(true); }}
+              >
+                Edit
+              </Button>
+            ) : null}
+          </View>
+        )}
         {admissionFeeError ? <Text style={styles.error}>{admissionFeeError}</Text> : null}
       </Surface>
 
@@ -161,28 +151,6 @@ export function SubscriptionPage() {
 
       {dialogOpen ? <PlanDialog key={editingPlan?.id ?? "new-plan"} plan={editingPlan} saving={saving} error={actionError} onClose={() => { setDialogOpen(false); setEditingPlan(null); }} onSave={savePlan} /> : null}
     </AppShell>
-  );
-}
-
-function WorkspacePlan({ subscription }: { subscription: ReturnType<typeof useSubscription>["subscription"] }) {
-  return (
-    <Surface style={styles.planPanel}>
-      <View style={styles.planTopline}>
-        <View style={styles.planHeading}>
-          <Text style={styles.eyebrow}>WORKSPACE PLAN</Text>
-          {subscription ? (
-            <View style={styles.planNameRow}>
-              <Text style={styles.planName}>{subscription.planKey}</Text>
-              <StatusBadge label={subscription.status.replaceAll("_", " ")} tone={subscription.status === "active" ? "green" : "amber"} />
-            </View>
-          ) : <Text style={styles.planName}>Not configured</Text>}
-          <Text style={styles.planDescription}>{subscription ? "Workspace billing plan" : "Workspace billing has not been configured."}</Text>
-        </View>
-      </View>
-      <View style={styles.divider} />
-      <Text style={styles.sectionLabel}>Membership plans</Text>
-      <Text style={styles.workspaceNote}>Member plans below are managed separately from workspace billing.</Text>
-    </Surface>
   );
 }
 
@@ -244,32 +212,10 @@ function DialogField({ label, ...props }: { label: string } & React.ComponentPro
   return <View style={styles.dialogField}><Text style={styles.fieldLabel}>{label}</Text><TextInput {...props} placeholderTextColor="#89948D" style={styles.dialogInput} /></View>;
 }
 
-function formatDate(value: string) {
-  return new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(new Date(`${value}T12:00:00`));
-}
-
 const styles = StyleSheet.create({
-  primaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-  planPanel: { flex: 1, minWidth: 300, padding: 22 },
-  billingPanel: { width: 290, minWidth: 260, padding: 22 },
-  planTopline: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 20 },
-  planHeading: { flex: 1, gap: 8 },
-  eyebrow: { color: colors.muted, fontSize: 9, fontWeight: "700", letterSpacing: 0.8 },
-  planNameRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 10 },
-  planName: { color: colors.ink, fontSize: 22, fontWeight: "700" },
-  planDescription: { color: colors.muted, fontSize: 11, lineHeight: 17 },
-  divider: { height: 1, backgroundColor: colors.line, marginVertical: 20 },
-  sectionLabel: { color: colors.ink, fontSize: 11, fontWeight: "700", marginBottom: 8 },
-  workspaceNote: { color: colors.muted, fontSize: 10, lineHeight: 15 },
-  billingIcon: { width: 32, height: 32, borderRadius: 7, alignItems: "center", justifyContent: "center", backgroundColor: colors.blueSoft, marginBottom: 17 },
-  billingTitle: { color: colors.muted, fontSize: 11 },
-  renewalDate: { color: colors.ink, fontSize: 17, fontWeight: "700", marginTop: 5 },
-  billingNote: { color: colors.muted, fontSize: 10, marginTop: 5 },
-  billingMeta: { flexDirection: "row", alignItems: "flex-start", gap: 8 },
-  metaText: { flex: 1, color: colors.muted, fontSize: 10, lineHeight: 15 },
   usageTitleGroup: { gap: 4 },
   sectionTitle: { color: colors.ink, fontSize: 14, fontWeight: "700" },
-  sectionDescription: { color: colors.muted, fontSize: 10 },
+  sectionDescription: { color: colors.muted, fontSize: 12 },
   admissionFeePanel: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: 16, padding: 20 },
   admissionFeeHeading: { flex: 1, minWidth: 220, gap: 5 },
   admissionFeeControls: { flexDirection: "row", alignItems: "center", gap: 9 },
@@ -279,22 +225,20 @@ const styles = StyleSheet.create({
   planRow: { minHeight: 63, borderTopWidth: 1, borderTopColor: colors.line, paddingHorizontal: 20, flexDirection: "row", alignItems: "center", gap: 12 },
   planRowCopy: { flex: 1, gap: 4 },
   planRowName: { color: colors.ink, fontSize: 12, fontWeight: "600" },
-  planRowPrice: { color: colors.muted, fontSize: 10 },
+  planRowPrice: { color: colors.muted, fontSize: 12 },
   planActions: { flexDirection: "row", alignItems: "center", gap: 5 },
   iconButton: { width: 32, height: 32, alignItems: "center", justifyContent: "center", borderRadius: radii.small },
-  loadingBlocks: { gap: 16 },
-  workspaceSkeleton: { height: 190 },
   planSkeletonList: { padding: 18, gap: 9 },
   planRowSkeleton: { height: 42 },
-  error: { color: colors.coral, fontSize: 11, padding: 14 },
+  error: { color: colors.coral, fontSize: 12, padding: 14 },
   modalBackdrop: { flex: 1, minHeight: "100%", padding: 18, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(19, 34, 26, 0.42)" },
   dialog: { width: "100%", maxWidth: 460, padding: 24, backgroundColor: colors.surface, borderRadius: radii.medium, borderWidth: 1, borderColor: colors.line },
   dialogHeader: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 16, marginBottom: 20 },
   dialogTitle: { color: colors.ink, fontSize: 18, fontWeight: "700" },
-  dialogSubtitle: { color: colors.muted, fontSize: 11, marginTop: 5 },
+  dialogSubtitle: { color: colors.muted, fontSize: 12, marginTop: 5 },
   closeButton: { width: 30, height: 30, alignItems: "center", justifyContent: "center" },
   dialogField: { gap: 6, marginBottom: 14 },
-  fieldLabel: { color: colors.ink, fontSize: 11, fontWeight: "600", marginBottom: 7 },
+  fieldLabel: { color: colors.ink, fontSize: 12, fontWeight: "600", marginBottom: 7 },
   dialogInput: { height: 40, borderWidth: 1, borderColor: "#DDE3DF", borderRadius: radii.small, paddingHorizontal: 10, fontSize: 12, color: colors.ink },
   dialogActions: { flexDirection: "row", justifyContent: "flex-end", gap: 9, marginTop: 20 },
 });

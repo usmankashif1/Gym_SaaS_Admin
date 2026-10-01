@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   quiet: { backgroundColor: "transparent" },
   pressed: { opacity: 0.78 },
   disabled: { opacity: 0.55 },
-  label: { color: colors.ink, fontSize: 13, fontWeight: "600" },
+  label: { color: colors.ink, fontSize: 14, fontWeight: "600" },
   primaryLabel: { color: colors.surface },
   icon: { alignItems: "center", justifyContent: "center" },
 });

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
 import { listMemberCheckIns, recordMemberCheckIn } from "@/services/checkInService";
-import { createMember, listMembers, updateMember, type MemberInput } from "@/services/memberService";
+import { createMember, deleteMember as deleteMemberRecord, listMembers, updateMember, type MemberInput, type NewMemberInput } from "@/services/memberService";
 import type { Member } from "@/types/domain";
 
 export function useMembers(search: string, page: number) {
@@ -45,15 +45,21 @@ export function useMembers(search: string, page: number) {
     return () => { current = false; };
   }, [checkInKey, page, queryKey, search, today]);
 
-  const addMember = async (input: MemberInput) => {
-    const added = await createMember(input);
-    setMembers((current) => [added, ...current]);
+  const addMember = async (input: NewMemberInput) => {
+    const member = await createMember(input);
+    setMembers((current) => [member, ...current]);
     setTotal((current) => current + 1);
   };
 
   const saveMember = async (memberId: string, input: MemberInput) => {
     const saved = await updateMember(memberId, input);
     setMembers((current) => current.map((member) => member.id === memberId ? saved : member));
+  };
+
+  const removeMember = async (memberId: string) => {
+    await deleteMemberRecord(memberId);
+    setMembers((current) => current.filter((member) => member.id !== memberId));
+    setTotal((current) => Math.max(0, current - 1));
   };
 
   const checkInMember = async (memberId: string) => {
@@ -80,6 +86,7 @@ export function useMembers(search: string, page: number) {
     error: failure?.key === queryKey ? failure.message : "",
     addMember,
     saveMember,
+    removeMember,
     checkInMember,
     checkingInIds,
     checkedInIds: checkedInState.key === checkInKey ? checkedInState.ids : new Set(),

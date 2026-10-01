@@ -12,6 +12,8 @@ export async function getCurrentGym(): Promise<GymContext> {
     .from("gym_memberships")
     .select("gym_id, role, gyms!inner(name,logo_path,admission_fee)")
     .eq("user_id", userResult.user.id)
+    .order("created_at", { ascending: true })
+    .order("gym_id", { ascending: true })
     .limit(1)
     .maybeSingle();
 
