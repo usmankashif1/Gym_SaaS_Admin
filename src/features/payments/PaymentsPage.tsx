@@ -1,4 +1,4 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
+﻿import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, CreditCard } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
@@ -143,29 +143,29 @@ const styles = StyleSheet.create({
         paddingHorizontal: 1
     },
     tabSelected: { borderBottomColor: colors.green },
-    tabText: { color: colors.muted, fontSize: 12, fontWeight: "500" },
+    tabText: { color: colors.muted, fontSize: 14, fontWeight: "500" },
     tabTextSelected: { color: colors.green, fontWeight: "700" },
     listHeader: { minHeight: 75, paddingHorizontal: 18, flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 14 },
     listHeaderCopy: { gap: 4 },
     listTitle: { color: colors.ink, fontSize: 14, fontWeight: "700" },
-    listSubtitle: { color: colors.muted, fontSize: 12 },
+    listSubtitle: { color: colors.muted, fontSize: 14 },
     headerCountSkeleton: { width: 75, height: 12, marginTop: 2 },
     headerBadgeSkeleton: { width: 62, height: 23 },
     tableHeader: { minHeight: 37, backgroundColor: "#F8FAF8", borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.line, paddingHorizontal: 18, flexDirection: "row", alignItems: "center" },
-    headerCell: { color: colors.muted, fontSize: 12, fontWeight: "700", letterSpacing: 0.6 },
+    headerCell: { color: colors.muted, fontSize: 14, fontWeight: "700", letterSpacing: 0.6 },
     paymentMember: { flex: 1, minWidth: 100 },
     dueDate: { width: 115 },
     amount: { width: 88 },
     status: { width: 100 },
     actionSpace: { width: 138, alignItems: "flex-end" },
     paymentRow: { minHeight: 64, borderBottomWidth: 1, borderBottomColor: "#EEF1EF", paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 9 },
-    memberName: { color: colors.ink, fontSize: 12, fontWeight: "600" },
-    planName: { color: colors.muted, fontSize: 12, marginTop: 3 },
-    mobileInfo: { color: colors.muted, fontSize: 12, marginTop: 4 },
-    cellText: { color: colors.ink, fontSize: 12 },
-    amountText: { color: colors.ink, fontSize: 12, fontWeight: "600" },
-    recordedLabel: { color: colors.muted, fontSize: 12 },
-    errorText: { color: colors.coral, fontSize: 12, paddingHorizontal: 18, paddingBottom: 8 },
+    memberName: { color: colors.ink, fontSize: 14, fontWeight: "600" },
+    planName: { color: colors.muted, fontSize: 14, marginTop: 3 },
+    mobileInfo: { color: colors.muted, fontSize: 14, marginTop: 4 },
+    cellText: { color: colors.ink, fontSize: 14 },
+    amountText: { color: colors.ink, fontSize: 14, fontWeight: "600" },
+    recordedLabel: { color: colors.muted, fontSize: 14 },
+    errorText: { color: colors.coral, fontSize: 14, paddingHorizontal: 18, paddingBottom: 8 },
     skeletonList: { paddingHorizontal: 18, paddingVertical: 8, gap: 10 },
     paymentSkeleton: { height: 47 },
 });

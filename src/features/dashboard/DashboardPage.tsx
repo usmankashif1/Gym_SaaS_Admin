@@ -208,7 +208,7 @@ const styles = StyleSheet.create({
     },
     metricNote: {
         color: colors.muted,
-        fontSize: 12,
+        fontSize: 14,
         lineHeight: 17,
         marginTop: 8
     },
@@ -219,7 +219,8 @@ const styles = StyleSheet.create({
     },
     paymentListCard: {
         flex: 1,
-        minWidth: 300
+        minWidth: 300,
+        borderWidth: 1, borderColor: colors.muted, borderRadius: 8, 
     },
     paymentListHeader: {
         minHeight: 70,
@@ -240,7 +241,7 @@ const styles = StyleSheet.create({
     },
     paymentListCount: {
         color: colors.muted,
-        fontSize: 12
+        fontSize: 14
     },
     viewListButton: {
         minHeight: 34,
@@ -251,7 +252,7 @@ const styles = StyleSheet.create({
     },
     viewListLabel: {
         color: colors.green,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: "600"
     },
     memberPaymentRow: {
@@ -270,27 +271,27 @@ const styles = StyleSheet.create({
     },
     memberPaymentName: {
         color: colors.ink,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: "600"
     },
     memberPaymentPlan: {
         color: colors.muted,
-        fontSize: 12
+        fontSize: 14
     },
     memberPaymentAmount: {
         color: colors.ink,
-        fontSize: 12,
+        fontSize: 14,
         fontWeight: "600"
     },
     noMemberPayments: {
         color: colors.muted,
-        fontSize: 12,
+        fontSize: 14,
         paddingHorizontal: 18,
         paddingBottom: 18
     },
     moreMembers: {
         color: colors.muted,
-        fontSize: 12,
+        fontSize: 14,
         paddingHorizontal: 18,
         paddingVertical: 10,
         borderTopWidth: 1,
@@ -303,7 +304,7 @@ const styles = StyleSheet.create({
     },
     errorText: {
         color: colors.coral,
-        fontSize: 12
+        fontSize: 14
     },
 
 });

@@ -17,5 +17,5 @@ const styles = StyleSheet.create({
   empty: { minHeight: 220, alignItems: "center", justifyContent: "center", paddingHorizontal: 24, gap: 8 },
   icon: { width: 38, height: 38, alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: colors.greenSoft, marginBottom: 4 },
   title: { color: colors.ink, fontSize: 14, fontWeight: "700" },
-  description: { color: colors.muted, fontSize: 12, textAlign: "center", lineHeight: 17, maxWidth: 300 },
+  description: { color: colors.muted, fontSize: 14, textAlign: "center", lineHeight: 17, maxWidth: 300 },
 });

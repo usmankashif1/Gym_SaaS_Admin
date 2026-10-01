@@ -42,5 +42,5 @@ const styles = StyleSheet.create({
   loadingPanel: { height: 300, marginTop: 12 },
   setup: { flex: 1, minHeight: "100%", alignItems: "center", justifyContent: "center", backgroundColor: colors.canvas, padding: 24, gap: 10 },
   setupTitle: { color: colors.ink, fontSize: 18, fontWeight: "700", textAlign: "center" },
-  setupMessage: { color: colors.muted, fontSize: 12, lineHeight: 18, textAlign: "center", maxWidth: 420 },
+  setupMessage: { color: colors.muted, fontSize: 14, lineHeight: 18, textAlign: "center", maxWidth: 420 },
 });

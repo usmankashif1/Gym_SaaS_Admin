@@ -30,5 +30,5 @@ const styles = StyleSheet.create({
     alignItems: "center"
 
   },
-  label: { fontSize: 12, lineHeight: 15, fontWeight: "600" },
+  label: { fontSize: 14, lineHeight: 15, fontWeight: "600" },
 });
