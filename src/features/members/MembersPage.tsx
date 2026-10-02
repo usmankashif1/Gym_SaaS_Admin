@@ -468,7 +468,7 @@ const styles = StyleSheet.create({
   memberColumn: { flex: 2, minWidth: 0 },
   planColumn: { flex: 1, minWidth: 90 },
   joinedColumn: { width: 105 },
-  statusColumn: { width: 82, alignItems: "flex-start" },
+  statusColumn: { width: 82, alignItems: "flex-start", marginRight: 32 },
   actionsColumn: { width: 142 },
   memberRow: { minHeight: 67, borderBottomWidth: 1, borderBottomColor: "#EEF1EF", paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 8 },
   identityColumn: { flexDirection: "row", alignItems: "center", gap: 10 },
