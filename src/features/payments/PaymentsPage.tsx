@@ -1,5 +1,5 @@
 ﻿import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, CreditCard } from "lucide-react-native";
+import { Check, CreditCard, Plus } from "lucide-react-native";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 
@@ -93,38 +93,71 @@ export function PaymentsPage() {
 function PaymentTableHeader({ history }: { history: boolean }) {
     return (
         <View style={styles.tableHeader}>
-            <Text style={[styles.headerCell, styles.paymentMember]}>MEMBER</Text>
-            <Text style={[styles.headerCell, styles.dueDate]}>{history ? "PAID ON" : "DUE DATE"}</Text>
-            <Text style={[styles.headerCell, styles.amount]}>AMOUNT</Text>
-            <Text style={[styles.headerCell, styles.status]}>STATUS</Text>
-            <View style={styles.actionSpace} />
+            <View style={styles.memberHeaderColumn}>
+                <Text style={[styles.headerCell]}>MEMBER</Text>
+            </View>
+            <View style={styles.dateHeaderColumn}>
+                <Text style={[styles.headerCell]}>{history ? "PAID ON" : "DUE DATE"}</Text>
+            </View>
+            <View style={styles.amountHeaderColumn}>
+                <Text style={[styles.headerCell]}>AMOUNT</Text>
+            </View>
+            <View style={[styles.statusHeaderColumn, history && styles.historyStatusHeaderColumn]}>
+                <Text style={[styles.headerCell]}>STATUS</Text>
+            </View>
+            {!history ? <View style={styles.actionHeaderColumn} /> : null}
         </View>
     );
 }
 
 
 function PaymentRow({ payment, compact, history, busy, onRecord }: { payment: Payment; compact: boolean; history: boolean; busy: boolean; onRecord: () => void }) {
+    const dueDateText = formatDate(history && payment.paidAt ? payment.paidAt.slice(0, 10) : payment.dueDate);
+
     return (
         <View style={styles.paymentRow}>
-            <View style={styles.paymentMember}>
+            <View style={styles.memberColumn}>
                 <Text numberOfLines={1} style={styles.memberName}>{payment.memberName}</Text>
                 {payment.type === "combined" ? (
                     <Text numberOfLines={1} style={styles.planName}>
                         {payment.membershipPlanName || "Membership"} + Admission fee {currency.format(payment.admissionFeeAmount ?? 0)}
                     </Text>
                 ) : payment.type === "admission" ? <Text numberOfLines={1} style={styles.planName}>Admission fee</Text> : payment.membershipPlanName ? <Text numberOfLines={1} style={styles.planName}>{payment.membershipPlanName}</Text> : null}
-                {compact ? <Text style={styles.mobileInfo}>{history ? "Paid" : payment.status === "overdue" ? "Overdue" : "Due today"} · {formatDate(history && payment.paidAt ? payment.paidAt.slice(0, 10) : payment.dueDate)}</Text> : null}
+                {compact ? <Text style={styles.mobileInfo}>{history ? "Paid" : payment.status === "overdue" ? "Overdue" : "Due today"} · {dueDateText}</Text> : null}
             </View>
-            {!compact ? <Text style={[styles.cellText, styles.dueDate]}>{formatDate(history && payment.paidAt ? payment.paidAt.slice(0, 10) : payment.dueDate)}</Text> : null}
-            <Text style={[styles.amountText, styles.amount]}>{currency.format(payment.amount)}</Text>
-            {!compact ? <View style={styles.status}><StatusBadge label={history ? "Paid" : payment.status === "overdue" ? "Overdue" : "Due today"} tone={history ? "green" : payment.status === "overdue" ? "coral" : "amber"} /></View> : null}
-            <View style={styles.actionSpace}>
-                {history ? <Text style={styles.recordedLabel}>Recorded</Text> : (
-                    <Button variant="secondary" disabled={busy} onPress={onRecord} icon={<Check size={14} color={colors.green} />}>
-                        {busy ? "Saving..." : compact ? "Paid" : "Record payment"}
+            {!compact ? (
+                <View style={styles.dateColumn}>
+                    <Text style={[styles.cellText]}>{dueDateText}</Text>
+                </View>
+            ) : null}
+            <View style={styles.amountColumn}>
+                <Text style={[styles.amountText]}>{currency.format(payment.amount)}</Text>
+            </View>
+            {!compact ? (
+                <View style={[styles.statusColumn, history && styles.historyStatusColumn]}>
+                    {history ? (
+                        <StatusBadge label="Paid" tone="emerald" icon={<Check size={12} color={colors.surface} />} />
+                    ) : payment.status === "overdue" ? (
+                        <StatusBadge label="Overdue" tone="coral" />
+                    ) : (
+                        <StatusBadge label="Due Today" tone="gold" />
+                    )}
+                </View>
+            ) : null}
+            {!history ? (
+                <View style={styles.actionColumn}>
+                    <Button
+                        variant="mint"
+                        disabled={busy}
+                        onPress={onRecord}
+                        style={styles.recordButton}
+                        icon={<Plus size={14} color={colors.green} strokeWidth={2.5} />}
+                        labelStyle={styles.recordButtonLabel}
+                    >
+                        {busy ? "Saving..." : compact ? "Paid" : "Record Payment"}
                     </Button>
-                )}
-            </View>
+                </View>
+            ) : null}
         </View>
     );
 }
@@ -151,20 +184,78 @@ const styles = StyleSheet.create({
     listSubtitle: { color: colors.muted, fontSize: 14 },
     headerCountSkeleton: { width: 75, height: 12, marginTop: 2 },
     headerBadgeSkeleton: { width: 62, height: 23 },
-    tableHeader: { minHeight: 37, backgroundColor: "#F8FAF8", borderTopWidth: 1, borderBottomWidth: 1, borderColor: colors.line, paddingHorizontal: 18, flexDirection: "row", alignItems: "center" },
-    headerCell: { color: colors.muted, fontSize: 14, fontWeight: "700", letterSpacing: 0.6 },
-    paymentMember: { flex: 1, minWidth: 100 },
-    dueDate: { width: 115 },
-    amount: { width: 88 },
-    status: { width: 100 },
-    actionSpace: { width: 138, alignItems: "flex-end" },
-    paymentRow: { minHeight: 64, borderBottomWidth: 1, borderBottomColor: "#EEF1EF", paddingHorizontal: 18, flexDirection: "row", alignItems: "center", gap: 9 },
-    memberName: { color: colors.ink, fontSize: 14, fontWeight: "600" },
-    planName: { color: colors.muted, fontSize: 14, marginTop: 3 },
-    mobileInfo: { color: colors.muted, fontSize: 14, marginTop: 4 },
-    cellText: { color: colors.ink, fontSize: 14 },
-    amountText: { color: colors.ink, fontSize: 14, fontWeight: "600" },
+    tableHeader: {
+        minHeight: 37,
+        backgroundColor: "#F8FAF8",
+        borderTopWidth: 1,
+        borderBottomWidth: 1,
+        borderColor: "#D4DDD7",
+        paddingHorizontal: 18,
+        flexDirection: "row",
+        alignItems: "stretch",
+    },
+    headerCell: {
+        color: colors.muted,
+        fontSize: 14,
+        fontWeight: "700",
+        letterSpacing: 0.6,
+        textAlign: "left",
+        lineHeight: 16,
+    },
+    memberHeaderColumn: { flex: 2.2, justifyContent: "center", alignItems: "flex-start", paddingHorizontal: 12, borderRightWidth: 1, borderRightColor: "#CBD6CF" },
+    dateHeaderColumn: { flex: 1, justifyContent: "center", alignItems: "flex-start", paddingHorizontal: 12, borderRightWidth: 1, borderRightColor: "#CBD6CF" },
+    amountHeaderColumn: { flex: 1, justifyContent: "center", alignItems: "flex-start", paddingHorizontal: 12, borderRightWidth: 1, borderRightColor: "#CBD6CF" },
+    statusHeaderColumn: { flex: 1, justifyContent: "center", alignItems: "flex-start", paddingHorizontal: 12, borderRightWidth: 1, borderRightColor: "#CBD6CF" },
+    historyStatusHeaderColumn: { alignItems: "flex-start", borderRightWidth: 0 },
+    actionHeaderColumn: { flex: 1.2, justifyContent: "center", alignItems: "flex-start", paddingHorizontal: 12 },
+    memberColumn: {
+        flex: 2.2,
+        justifyContent: "center",
+        alignItems: "flex-start",
+        minWidth: 0,
+        paddingHorizontal: 12,
+        borderRightWidth: 1,
+        borderRightColor: "#CBD6CF",
+    },
+    dateColumn: { flex: 1, justifyContent: "center", alignItems: "flex-start", minWidth: 0, paddingHorizontal: 12, borderRightWidth: 1, borderRightColor: "#CBD6CF" },
+    amountColumn: { flex: 1, justifyContent: "center", alignItems: "flex-start", minWidth: 0, paddingHorizontal: 12, borderRightWidth: 1, borderRightColor: "#CBD6CF" },
+    statusColumn: { flex: 1, justifyContent: "center", alignItems: "flex-start", minWidth: 0, paddingHorizontal: 12, borderRightWidth: 1, borderRightColor: "#CBD6CF" },
+    historyStatusColumn: { alignItems: "flex-start", borderRightWidth: 0 },
+    actionColumn: { flex: 1.2, justifyContent: "center", alignItems: "flex-start", minWidth: 0, paddingHorizontal: 12 },
+    paymentRow: {
+        minHeight: 64,
+        borderBottomWidth: 1,
+        borderBottomColor: "#DCE3DE",
+        paddingHorizontal: 18,
+        flexDirection: "row",
+        alignItems: "stretch",
+    },
+    memberName: { color: colors.ink, fontSize: 14, fontWeight: "600", textAlign: "left" },
+    planName: { color: colors.muted, fontSize: 14, marginTop: 3, textAlign: "left" },
+    mobileInfo: { color: colors.muted, fontSize: 14, marginTop: 4, textAlign: "left" },
+    cellText: { color: colors.ink, fontSize: 14, textAlign: "left" },
+    amountText: { color: colors.ink, fontSize: 14, fontWeight: "600", textAlign: "left" },
     recordedLabel: { color: colors.muted, fontSize: 14 },
+    historyPill: {
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 6,
+        backgroundColor: "#EEF1F1",
+        borderWidth: 1,
+        borderColor: "#E1E6E4",
+        borderRadius: 999,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+    },
+    historyLabel: { color: colors.muted, fontSize: 13, fontWeight: "600" },
+    recordButton: {
+        minHeight: 38,
+        paddingHorizontal: 12,
+        paddingVertical: 0,
+        alignSelf: "center",
+    },
+    recordButtonLabel: { color: colors.green, fontSize: 14, fontWeight: "600" },
     errorText: { color: colors.coral, fontSize: 14, paddingHorizontal: 18, paddingBottom: 8 },
     skeletonList: { paddingHorizontal: 18, paddingVertical: 8, gap: 10 },
     paymentSkeleton: { height: 47 },

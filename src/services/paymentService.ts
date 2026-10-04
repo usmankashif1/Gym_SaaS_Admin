@@ -32,7 +32,9 @@ export async function listPayments(filter: PaymentStatus | "all" = "all", page =
       .from("payment_history")
       .select("*", { count: "exact" })
       .eq("gym_id", gym.id)
+      .order("paid_at", { ascending: false })
       .order("due_date", { ascending: false })
+      .order("id", { ascending: false })
       .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
     if (error) throw error;
     return { items: data.map(mapPayment), total: count ?? 0 };

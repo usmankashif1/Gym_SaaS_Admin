@@ -2,7 +2,7 @@ begin;
 
 create extension if not exists pgtap with schema extensions;
 
-select plan(52);
+select plan(60);
 
 create temporary table payment_audit_fixture as
 select
@@ -307,6 +307,76 @@ select is(
   'month-end signup payment timestamp preserves January 31'
 );
 select is((select revenue_this_month from public.get_dashboard_metrics()), 330.41::numeric, 'historical signup revenue is not counted in the current month');
+
+update public.membership_plans
+set duration_months = 3
+where id = (select plan_id from payment_audit_fixture);
+
+select lives_ok(
+  $$select public.create_member_with_initial_payment(
+    p_membership_plan_id => (select plan_id from payment_audit_fixture),
+    p_first_name => 'DurationAudit',
+    p_last_name => 'Member',
+    p_admission_fee => 0,
+    p_signup_date => current_date
+  )$$,
+  'a member can join on an existing three-month plan'
+);
+select is(
+  (select next_due from public.members where first_name = 'DurationAudit' and gym_id = (select gym_id from payment_audit_fixture)),
+  (current_date + interval '3 months')::date,
+  'signup validity uses the full configured plan duration'
+);
+select is(
+  (select sum(amount) from public.payments where member_id = (select id from public.members where first_name = 'DurationAudit' and gym_id = (select gym_id from payment_audit_fixture)) and payment_type = 'membership'),
+  99.99::numeric,
+  'signup charges the plan price entered by the admin without prorating'
+);
+update public.members
+set next_due = current_date
+where first_name = 'DurationAudit' and gym_id = (select gym_id from payment_audit_fixture);
+select public.generate_due_membership_payments();
+select is(
+  (select amount from public.payments where member_id = (select id from public.members where first_name = 'DurationAudit' and gym_id = (select gym_id from payment_audit_fixture)) and status = 'pending' and due_date = current_date),
+  99.99::numeric,
+  'the plan price is charged when the complete plan term expires'
+);
+select public.record_membership_payment((select id from public.payments where member_id = (select id from public.members where first_name = 'DurationAudit' and gym_id = (select gym_id from payment_audit_fixture)) and status = 'pending' and due_date = current_date));
+select is(
+  (select next_due from public.members where first_name = 'DurationAudit' and gym_id = (select gym_id from payment_audit_fixture)),
+  (current_date + interval '3 months')::date,
+  'recording renewal extends validity by the full plan duration'
+);
+
+select lives_ok(
+  $$select public.create_member_with_initial_payment(
+    p_membership_plan_id => (select plan_id from payment_audit_fixture),
+    p_first_name => 'LocalDateAudit',
+    p_last_name => 'Member',
+    p_admission_fee => 0,
+    p_signup_date => (now() at time zone 'Pacific/Kiritimati')::date,
+    p_time_zone => 'Pacific/Kiritimati'
+  )$$,
+  'signup accepts today according to the client timezone'
+);
+select is(
+  (select joined_at from public.members where first_name = 'LocalDateAudit' and gym_id = (select gym_id from payment_audit_fixture)),
+  (now() at time zone 'Pacific/Kiritimati')::date,
+  'joined date matches the current date in the client timezone'
+);
+select throws_ok(
+  $$select public.create_member_with_initial_payment(
+    p_membership_plan_id => (select plan_id from payment_audit_fixture),
+    p_first_name => 'LocalFutureDateAudit',
+    p_last_name => 'Member',
+    p_admission_fee => 0,
+    p_signup_date => (now() at time zone 'Pacific/Kiritimati')::date + 1,
+    p_time_zone => 'Pacific/Kiritimati'
+  )$$,
+  'P0001',
+  'Signup date must be today or earlier.',
+  'future signup dates are rejected in the client timezone'
+);
 
 select * from finish();
 rollback;

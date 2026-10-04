@@ -8,6 +8,7 @@ export function useMembershipPlans(includeInactive = false) {
   const [plans, setPlans] = useState<MembershipPlan[]>([]);
   const [canManage, setCanManage] = useState(false);
   const [admissionFee, setAdmissionFee] = useState<number | null>(null);
+  const [dayPassFee, setDayPassFee] = useState<number | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState("");
 
@@ -19,6 +20,7 @@ export function useMembershipPlans(includeInactive = false) {
         setPlans(result.plans);
         setCanManage(result.canManage);
         setAdmissionFee(result.admissionFee);
+        setDayPassFee(result.dayPassFee);
         setError("");
         setLoaded(true);
       })
@@ -37,5 +39,5 @@ export function useMembershipPlans(includeInactive = false) {
     });
   };
 
-  return { plans, canManage, admissionFee, setAdmissionFee, loading: !loaded, error, replacePlan };
+  return { plans, canManage, admissionFee, setAdmissionFee, dayPassFee, setDayPassFee, loading: !loaded, error, replacePlan };
 }

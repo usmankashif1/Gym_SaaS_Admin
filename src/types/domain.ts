@@ -8,6 +8,7 @@ export type Member = {
   planId: string | null;
   plan: string;
   planPrice: number | null;
+  planDurationMonths: number | null;
   status: MemberStatus;
   joinedAt: string;
   nextDue: string;
@@ -28,12 +29,13 @@ export type Payment = {
   status: PaymentStatus;
 };
 
-export type GymContext = { id: string; name: string; role: string; admissionFee: number; logoPath: string | null; logoUrl: string | null };
+export type GymContext = { id: string; name: string; role: string; admissionFee: number; dayPassFee: number | null; logoPath: string | null; logoUrl: string | null };
 
 export type MembershipPlan = {
   id: string;
   name: string;
   price: number;
+  durationMonths: number;
   isActive: boolean;
   createdAt: string;
 };

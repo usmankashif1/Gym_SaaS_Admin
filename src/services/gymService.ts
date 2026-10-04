@@ -10,7 +10,7 @@ export async function getCurrentGym(): Promise<GymContext> {
 
   const { data, error } = await supabase
     .from("gym_memberships")
-    .select("gym_id, role, gyms!inner(name,logo_path,admission_fee)")
+    .select("gym_id, role, gyms!inner(name,logo_path,admission_fee,day_pass_fee)")
     .eq("user_id", userResult.user.id)
     .order("created_at", { ascending: true })
     .order("gym_id", { ascending: true })
@@ -19,11 +19,11 @@ export async function getCurrentGym(): Promise<GymContext> {
 
   if (error) throw error;
   if (!data) throw new Error("This account is not connected to a gym.");
-  const gym = data.gyms as unknown as { name: string; logo_path: string | null; admission_fee: number };
+  const gym = data.gyms as unknown as { name: string; logo_path: string | null; admission_fee: number; day_pass_fee: number | null };
   const logoUrl = gym.logo_path
     ? supabase.storage.from("gym-logos").getPublicUrl(gym.logo_path).data.publicUrl
     : null;
-  return { id: data.gym_id, name: gym.name, role: data.role, admissionFee: Number(gym.admission_fee), logoPath: gym.logo_path, logoUrl };
+  return { id: data.gym_id, name: gym.name, role: data.role, admissionFee: Number(gym.admission_fee), dayPassFee: gym.day_pass_fee === null ? null : Number(gym.day_pass_fee), logoPath: gym.logo_path, logoUrl };
 }
 
 export async function updateGymAdmissionFee(admissionFee: number): Promise<number> {
@@ -40,6 +40,22 @@ export async function updateGymAdmissionFee(admissionFee: number): Promise<numbe
     .single();
   if (error) throw error;
   return Number(data.admission_fee);
+}
+
+export async function updateGymDayPassFee(dayPassFee: number): Promise<number> {
+  if (!supabase) throw new Error("Supabase is not configured.");
+  const gym = await getCurrentGym();
+  if (gym.role !== "owner") throw new Error("Only the gym owner can update the day pass fee.");
+  if (!Number.isFinite(dayPassFee) || dayPassFee <= 0) throw new Error("Day pass fee must be greater than zero.");
+
+  const { data, error } = await supabase
+    .from("gyms")
+    .update({ day_pass_fee: dayPassFee })
+    .eq("id", gym.id)
+    .select("day_pass_fee")
+    .single();
+  if (error) throw error;
+  return Number(data.day_pass_fee);
 }
 
 export async function uploadGymLogo(file: File): Promise<string> {

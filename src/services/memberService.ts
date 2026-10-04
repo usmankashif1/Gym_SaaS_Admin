@@ -1,10 +1,12 @@
-import { PAGE_SIZE } from "@/constants/pagination";
+import { MEMBER_PAGE_SIZE } from "@/constants/pagination";
 import { supabase } from "@/lib/supabase";
 import { getCurrentGym } from "@/services/gymService";
 import type { Member, MembershipPlan } from "@/types/domain";
 
 export type MemberInput = Pick<Member, "name" | "email" | "phone"> & { planId: string; admissionFee?: number };
 export type NewMemberInput = MemberInput & { signupDate: string };
+export type MemberSortKey = "name" | "plan" | "joined" | "status";
+export type MemberSortDirection = "asc" | "desc";
 
 type MemberRow = {
   id: string;
@@ -17,7 +19,7 @@ type MemberRow = {
   joined_at: string;
   next_due: string;
   status: Member["status"];
-  membership_plans?: Pick<MembershipPlan, "id" | "name" | "price"> | Pick<MembershipPlan, "id" | "name" | "price">[] | null;
+  membership_plans?: (Pick<MembershipPlan, "id" | "name" | "price"> & { duration_months: number }) | ((Pick<MembershipPlan, "id" | "name" | "price"> & { duration_months: number })[]) | null;
 };
 
 function mapMember(row: MemberRow): Member {
@@ -30,21 +32,30 @@ function mapMember(row: MemberRow): Member {
     planId: plan?.id ?? row.membership_plan_id,
     plan: plan?.name ?? row.plan_name,
     planPrice: plan ? Number(plan.price) : null,
+    planDurationMonths: plan?.duration_months ?? null,
     status: row.status,
     joinedAt: row.joined_at,
     nextDue: row.next_due,
   };
 }
 
-export async function listMembers(search = "", page = 0): Promise<{ items: Member[]; total: number }> {
+export async function listMembers(search = "", page = 0, sortKey: MemberSortKey = "joined", sortDirection: MemberSortDirection = "desc", status: Member["status"] | "all" = "all", joinedFrom: string | null = null, joinedThrough: string | null = null, planId: string | null = null): Promise<{ items: Member[]; total: number }> {
   if (!supabase) throw new Error("Supabase is not configured.");
   const gym = await getCurrentGym();
   let query = supabase
     .from("members")
-    .select("*, membership_plans(id,name,price)", { count: "exact" })
-    .eq("gym_id", gym.id)
-    .order("joined_at", { ascending: false })
-    .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+    .select("*, membership_plans(id,name,price,duration_months)", { count: "exact" })
+    .eq("gym_id", gym.id);
+  if (status !== "all") query = query.eq("status", status);
+  if (joinedFrom) query = query.gte("joined_at", joinedFrom);
+  if (joinedThrough) query = query.lte("joined_at", joinedThrough);
+  if (planId) query = query.eq("membership_plan_id", planId);
+  const ascending = sortDirection === "asc";
+  if (sortKey === "name") query = query.order("first_name", { ascending }).order("last_name", { ascending });
+  else if (sortKey === "plan") query = query.order("plan_name", { ascending }).order("first_name", { ascending: true });
+  else if (sortKey === "status") query = query.order("status", { ascending }).order("first_name", { ascending: true });
+  else query = query.order("joined_at", { ascending }).order("first_name", { ascending: true });
+  query = query.range(page * MEMBER_PAGE_SIZE, (page + 1) * MEMBER_PAGE_SIZE - 1);
   const safeSearch = search.trim().slice(0, 80).replace(/[(),]/g, " ");
   if (safeSearch) query = query.or(`first_name.ilike.%${safeSearch}%,last_name.ilike.%${safeSearch}%,email.ilike.%${safeSearch}%`);
   const { data, error, count } = await query;
@@ -63,12 +74,13 @@ export async function createMember(input: NewMemberInput): Promise<Member> {
     p_phone: input.phone.trim() || null,
     p_admission_fee: input.admissionFee ?? null,
     p_signup_date: input.signupDate,
+    p_time_zone: Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC",
   });
   if (error) throw error;
   const created = data as Pick<MemberRow, "id">;
   const { data: member, error: memberError } = await supabase
     .from("members")
-    .select("*, membership_plans(id,name,price)")
+    .select("*, membership_plans(id,name,price,duration_months)")
     .eq("id", created.id)
     .single();
   if (memberError) throw memberError;
@@ -100,7 +112,7 @@ export async function updateMember(memberId: string, input: MemberInput): Promis
     })
     .eq("id", memberId)
     .eq("gym_id", gym.id)
-    .select("*, membership_plans(id,name,price)")
+    .select("*, membership_plans(id,name,price,duration_months)")
     .single();
   if (error) throw error;
   return mapMember(data as MemberRow);

@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 
 import { supabase } from "@/lib/supabase";
 import { listMemberCheckIns, recordMemberCheckIn } from "@/services/checkInService";
-import { createMember, deleteMember as deleteMemberRecord, listMembers, updateMember, type MemberInput, type NewMemberInput } from "@/services/memberService";
+import { createMember, deleteMember as deleteMemberRecord, listMembers, updateMember, type MemberInput, type MemberSortDirection, type MemberSortKey, type NewMemberInput } from "@/services/memberService";
 import type { Member } from "@/types/domain";
 
-export function useMembers(search: string, page: number) {
+export function useMembers(search: string, page: number, sortKey: MemberSortKey, sortDirection: MemberSortDirection, status: Member["status"] | "all", joinedFrom: string | null, joinedThrough: string | null, planId: string | null) {
   const [members, setMembers] = useState<Member[]>([]);
   const [total, setTotal] = useState(0);
   const [loadedKey, setLoadedKey] = useState("");
@@ -13,7 +13,7 @@ export function useMembers(search: string, page: number) {
   const [checkingInIds, setCheckingInIds] = useState<Set<string>>(() => new Set());
   const [checkedInState, setCheckedInState] = useState<{ key: string; ids: Set<string> }>({ key: "", ids: new Set() });
   const [today, setToday] = useState(() => new Date().toISOString().slice(0, 10));
-  const queryKey = `${search}\u0000${page}`;
+  const queryKey = `${search}\u0000${page}\u0000${sortKey}\u0000${sortDirection}\u0000${status}\u0000${joinedFrom ?? ""}\u0000${joinedThrough ?? ""}\u0000${planId ?? ""}`;
   const checkInKey = `${queryKey}\u0000${today}`;
   const loading = Boolean(supabase && loadedKey !== queryKey);
 
@@ -27,7 +27,7 @@ export function useMembers(search: string, page: number) {
   useEffect(() => {
     if (!supabase) return;
     let current = true;
-    void listMembers(search, page)
+    void listMembers(search, page, sortKey, sortDirection, status, joinedFrom, joinedThrough, planId)
       .then(async (result) => {
         const checkedInMemberIds = await listMemberCheckIns(result.items.map((member) => member.id), today);
         if (!current) return;
@@ -43,7 +43,7 @@ export function useMembers(search: string, page: number) {
         setLoadedKey(queryKey);
       });
     return () => { current = false; };
-  }, [checkInKey, page, queryKey, search, today]);
+  }, [checkInKey, joinedFrom, joinedThrough, page, planId, queryKey, search, sortDirection, sortKey, status, today]);
 
   const addMember = async (input: NewMemberInput) => {
     const member = await createMember(input);
