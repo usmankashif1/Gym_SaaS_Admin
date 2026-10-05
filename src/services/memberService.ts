@@ -56,8 +56,11 @@ export async function listMembers(search = "", page = 0, sortKey: MemberSortKey 
   else if (sortKey === "status") query = query.order("status", { ascending }).order("first_name", { ascending: true });
   else query = query.order("joined_at", { ascending }).order("first_name", { ascending: true });
   query = query.range(page * MEMBER_PAGE_SIZE, (page + 1) * MEMBER_PAGE_SIZE - 1);
-  const safeSearch = search.trim().slice(0, 80).replace(/[(),]/g, " ");
-  if (safeSearch) query = query.or(`first_name.ilike.%${safeSearch}%,last_name.ilike.%${safeSearch}%,email.ilike.%${safeSearch}%`);
+  const searchTerms = search.trim().slice(0, 80).replace(/[(),]/g, " ").split(/\s+/).filter(Boolean);
+  if (searchTerms.length) {
+    const termFilters = searchTerms.map((term) => `or(first_name.ilike.%${term}%,last_name.ilike.%${term}%,email.ilike.%${term}%)`);
+    query = query.or(`and(${termFilters.join(",")})`);
+  }
   const { data, error, count } = await query;
   if (error) throw error;
   return { items: data.map((row) => mapMember(row as MemberRow)), total: count ?? 0 };
