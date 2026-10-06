@@ -52,8 +52,8 @@ function formatDate(value: string) {
 
 const styles = StyleSheet.create({
   primaryGrid: { flexDirection: "row", flexWrap: "wrap", gap: 16 },
-  planPanel: { flex: 1, minWidth: 300, padding: 22 },
-  billingPanel: { width: 290, minWidth: 260, padding: 22 },
+  planPanel: { flex: 1, minWidth: 260, padding: 22 },
+  billingPanel: { width: 290, maxWidth: "100%", minWidth: 0, padding: 22 },
   planHeading: { gap: 8 },
   eyebrow: { color: colors.muted, fontSize: 14, fontWeight: "700" },
   planNameRow: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", gap: 10 },

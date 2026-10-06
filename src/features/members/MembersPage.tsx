@@ -62,7 +62,7 @@ export function MembersPage() {
   const { members, total, loading, error, addMember, saveMember, removeMember, checkInMember, checkingInIds, checkedInIds } = useMembers(deferredSearch, page, sort.key, sort.direction, statusFilter, joinedFrom, joinedThrough, planFilter);
   const { plans, admissionFee, loading: plansLoading, error: plansError } = useMembershipPlans(true);
   const { width } = useWindowDimensions();
-  const compact = width < 560;
+  const compact = width < 1000;
   const hasAppliedFilters = statusFilter !== "all" || joinedFrom !== null || joinedThrough !== null || planFilter !== null;
   const hasAppliedDayPassFilters = dayPassDateFrom !== null || dayPassDateThrough !== null || dayPassPaymentFilter !== "all" || Boolean(dayPassVisitorFilter.trim());
   const normalizedDayPassVisitorFilter = dayPassVisitorFilter.trim().toLowerCase();
@@ -1009,21 +1009,21 @@ const styles = StyleSheet.create({
   statusFilterMenu: { position: "absolute", zIndex: 40, elevation: 40, top: 48, right: 0, maxHeight: 520, borderWidth: 1, borderColor: "#D5E1D9", borderRadius: 8, backgroundColor: colors.surface, shadowColor: "#19251F", shadowOpacity: 0.12, shadowRadius: 8, shadowOffset: { width: 0, height: 4 } },
   statusFilterMenuContent: { padding: 12, paddingBottom: 8 },
   filterSection: { gap: 3, paddingBottom: 11, marginBottom: 10, borderBottomWidth: 1, borderBottomColor: colors.line },
-  filterSectionTitle: { color: colors.muted, fontSize: 12, fontWeight: "700", textTransform: "uppercase", marginBottom: 3 },
+  filterSectionTitle: { color: colors.muted, fontSize: 14, fontWeight: "700", textTransform: "uppercase", marginBottom: 3 },
   filterSearchInput: { minHeight: 40, borderWidth: 1, borderColor: "#DDE3DF", borderRadius: radii.small, paddingHorizontal: 10, color: colors.ink, fontSize: 14 },
-  filterRadioOption: { minHeight: 38, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 4 },
+  filterRadioOption: { minHeight: 44, flexDirection: "row", alignItems: "center", gap: 10, paddingHorizontal: 4 },
   radioOuter: { width: 18, height: 18, borderWidth: 1, borderColor: colors.muted, borderRadius: 9, alignItems: "center", justifyContent: "center" },
   radioOuterSelected: { borderColor: colors.green },
   radioInner: { width: 10, height: 10, borderRadius: 5, backgroundColor: colors.green },
   filterRadioLabel: { flex: 1, minWidth: 0, color: colors.ink, fontSize: 14 },
-  inactivePlanLabel: { color: colors.muted, fontSize: 12 },
-  filterEmptyText: { color: colors.muted, fontSize: 13, paddingVertical: 8 },
+  inactivePlanLabel: { color: colors.muted, fontSize: 14 },
+  filterEmptyText: { color: colors.muted, fontSize: 14, paddingVertical: 8 },
   filterClearOption: { minHeight: 34, justifyContent: "center", paddingHorizontal: 4 },
-  filterClearText: { color: colors.green, fontSize: 13, fontWeight: "600" },
+  filterClearText: { color: colors.green, fontSize: 14, fontWeight: "600" },
   filterFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 },
   clearFiltersButton: { minHeight: 40, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 5, paddingHorizontal: 9, borderWidth: 1, borderColor: "#CFE5D5", borderRadius: 8, backgroundColor: colors.surface },
-  clearFiltersLabel: { color: colors.green, fontSize: 13, fontWeight: "600" },
-  statusFilterOption: { minHeight: 38, justifyContent: "center", paddingHorizontal: 10, borderRadius: 5 },
+  clearFiltersLabel: { color: colors.green, fontSize: 14, fontWeight: "600" },
+  statusFilterOption: { minHeight: 44, justifyContent: "center", paddingHorizontal: 10, borderRadius: 5 },
   statusFilterOptionSelected: { backgroundColor: "#E8F5EC" },
   statusFilterOptionText: { color: colors.ink, fontSize: 14 },
   statusFilterOptionTextSelected: { color: colors.green, fontWeight: "700" },
@@ -1065,7 +1065,7 @@ const styles = StyleSheet.create({
   mobileDate: { color: colors.muted, fontSize: 14, marginTop: 4 },
   rowActions: { flex: 1.3, minWidth: 0, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: 8 },
   compactRowActions: { width: 96 },
-  checkInButton: { width: 36, height: 36, minWidth: 36, minHeight: 36, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: "#EFF8F2", paddingHorizontal: 0 },
+  checkInButton: { width: 44, height: 44, minWidth: 44, minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "center", borderRadius: 8, backgroundColor: "#EFF8F2", paddingHorizontal: 0 },
   checkInCompleted: { backgroundColor: colors.greenSoft },
   disabledAction: { opacity: 0.5 },
   checkInLabel: { color: colors.green, fontSize: 14, fontWeight: "600" },
@@ -1124,8 +1124,8 @@ const styles = StyleSheet.create({
   dropdownOption: { minHeight: 54, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: colors.line },
   dropdownOptionSelected: { backgroundColor: colors.greenSoft },
   dropdownOptionCopy: { flex: 1, minWidth: 0, gap: 3 },
-  dropdownOptionDetail: { color: colors.muted, fontSize: 13 },
-  dropdownOptionStatus: { color: colors.muted, fontSize: 12, fontWeight: "600" },
+  dropdownOptionDetail: { color: colors.muted, fontSize: 14 },
+  dropdownOptionStatus: { color: colors.muted, fontSize: 14, fontWeight: "600" },
   dropdownOptionStatusActive: { color: colors.green },
   durationOption: { minHeight: 42, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 12, borderBottomWidth: 1, borderBottomColor: colors.line },
   durationPrice: { color: colors.ink, fontSize: 14, fontWeight: "600" },

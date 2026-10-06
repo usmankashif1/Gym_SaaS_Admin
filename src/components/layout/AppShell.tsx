@@ -60,11 +60,14 @@ export function AppShell({ title, subtitle, action, children }: AppShellProps) {
         />
       ) : null}
       <View style={styles.main}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={[
+          styles.scrollContent,
+          width < 480 ? styles.narrowScrollContent : width < 1024 ? styles.tabletScrollContent : null,
+        ]}>
           {isCompact ? <WorkspaceIdentity gymName={gymName} gymLogoUrl={gymLogoUrl} compact /> : null}
-          <View style={styles.pageHeader}>
+          <View style={[styles.pageHeader, width < 480 && styles.compactPageHeader]}>
             <View style={styles.headingCopy}>
-              <Text style={styles.title}>{title}</Text>
+              <Text style={[styles.title, width < 400 && styles.compactTitle]}>{title}</Text>
               <Text style={styles.subtitle}>{subtitle}</Text>
             </View>
             {action ? <View style={styles.headerAction}>{action}</View> : null}
@@ -192,11 +195,15 @@ const styles = StyleSheet.create({
   signOutLabel: { color: "#F2F7F3", fontSize: 14, fontWeight: "600" },
   main: { flex: 1, minWidth: 0 },
   scrollContent: { width: "100%", maxWidth: 1440, alignSelf: "center", paddingHorizontal: 34, paddingTop: 30, paddingBottom: 42, gap: 24 },
+  tabletScrollContent: { paddingHorizontal: 24, paddingTop: 26, paddingBottom: 34, gap: 20 },
+  narrowScrollContent: { paddingHorizontal: 16, paddingTop: 20, paddingBottom: 24, gap: 18 },
   pageHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 16 },
+  compactPageHeader: { flexWrap: "wrap", alignItems: "flex-start", gap: 12 },
   headingCopy: { flex: 1, gap: 5 },
   title: { color: colors.ink, fontSize: 28, lineHeight: 34, fontWeight: "700" },
+  compactTitle: { fontSize: 24, lineHeight: 30 },
   subtitle: { color: colors.muted, fontSize: 14, lineHeight: 19 },
-  headerAction: { alignItems: "flex-end" },
+  headerAction: { maxWidth: "100%", alignItems: "flex-end" },
   mobileNavigation: { minHeight: 64, backgroundColor: colors.surface, borderTopWidth: 1, borderTopColor: colors.line, paddingBottom: 4 },
   mobileNavItems: { minHeight: 64, alignItems: "center", gap: 2, paddingHorizontal: 4 },
   mobileNavItem: { width: 96, alignItems: "center", justifyContent: "center", gap: 4, minHeight: 58 },

@@ -14,7 +14,7 @@ const currency = new Intl.NumberFormat("en-US", { style: "currency", currency: "
 export function DashboardPage() {
     const { summary, dueTodayPayments, overduePayments, dueTodayCount, overdueCount, loading, error } = useDashboard();
     const { width } = useWindowDimensions();
-    const columns = width < 900 ? 2 : 3;
+    const columns = width < 560 ? 1 : width < 1200 ? 2 : 3;
 
     if (loading) return <DashboardLoading columns={columns} />;
 
@@ -22,6 +22,7 @@ export function DashboardPage() {
         { label: "Active members", value: summary.activeMembers.toLocaleString(), note: "Current active memberships", icon: <UsersRound size={18} color={colors.green} />, tone: "green" as const },
         { label: "Today check-in", value: summary.checkInsToday.toLocaleString(), note: "Unique members checked in today", icon: <Activity size={18} color={colors.blue} />, tone: "blue" as const },
         { label: "Revenue this month", value: currency.format(summary.revenueThisMonth), note: "Payments recorded as paid", icon: <WalletCards size={18} color={colors.green} />, tone: "green" as const },
+        { label: "Total recoverable", value: currency.format(summary.dueTodayAmount + summary.overdueAmount), note: "Due today and overdue unpaid amounts", icon: <WalletCards size={18} color={colors.blue} />, tone: "blue" as const },
         { label: "Overdue recovery", value: currency.format(summary.overdueAmount), note: "Unpaid amount past due", icon: <CircleAlert size={18} color={colors.coral} />, tone: "coral" as const },
         { label: "Due today expected", value: currency.format(summary.dueTodayAmount), note: "Unpaid amount due today", icon: <CalendarClock size={18} color={colors.amber} />, tone: "amber" as const },
     ] : [];
@@ -52,13 +53,14 @@ export function DashboardPage() {
     );
 }
 
+
 function DashboardLoading({ columns }: { columns: number }) {
-    const rowCount = Math.ceil(5 / columns);
+    const rowCount = Math.ceil(6 / columns);
     return (
         <AppShell title="Dashboard" subtitle="Your gym at a glance.">
             <View style={styles.metricGrid}>
                 {Array.from({ length: rowCount }, (_, rowIndex) => {
-                    const cardsInRow = Math.min(columns, 5 - rowIndex * columns);
+                    const cardsInRow = Math.min(columns, 6 - rowIndex * columns);
                     return (
                         <View key={`skeleton-row-${rowIndex}`} style={styles.metricRow}>
                             {Array.from({ length: cardsInRow }, (_, cardIndex) => <Skeleton key={cardIndex} style={styles.metricSkeleton} />)}
@@ -75,6 +77,9 @@ function DashboardLoading({ columns }: { columns: number }) {
         </AppShell>
     );
 }
+
+
+
 
 function MetricCard({ label, value, note, icon, tone }: {
     label: string;
@@ -122,7 +127,7 @@ function MemberPaymentList({ title, count, payments, view }: { title: string; co
                 </View>
                 <Pressable accessibilityRole="link" onPress={() => router.push(`/payments?view=${view}`)} style={styles.viewListButton}>
                     <Text style={styles.viewListLabel}>View list</Text>
-                    <ArrowRight size={14} color={colors.green} />
+                    <ArrowRight size={18} color={colors.green} />
                 </Pressable>
             </View>
             {visiblePayments.length ? visiblePayments.map((payment) => (
@@ -201,7 +206,7 @@ const styles = StyleSheet.create({
     },
     metricValue: {
         color: colors.ink,
-        fontSize: 32,
+        fontSize: 26,
         lineHeight: 38,
         fontWeight: "800",
         marginTop: 18
@@ -219,11 +224,11 @@ const styles = StyleSheet.create({
     },
     paymentListCard: {
         flex: 1,
-        minWidth: 300,
-        borderWidth: 1, borderColor: colors.muted, borderRadius: 8, 
+        minWidth: 260,
+        borderWidth: 1, borderColor: colors.muted, borderRadius: 8,
     },
     paymentListHeader: {
-        minHeight: 70,
+        minHeight: 80,
         paddingHorizontal: 18,
         flexDirection: "row",
         alignItems: "center",
@@ -236,12 +241,12 @@ const styles = StyleSheet.create({
     },
     paymentListTitle: {
         color: colors.ink,
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: "700"
     },
     paymentListCount: {
         color: colors.muted,
-        fontSize: 14
+        fontSize: 16
     },
     viewListButton: {
         minHeight: 34,
@@ -252,11 +257,11 @@ const styles = StyleSheet.create({
     },
     viewListLabel: {
         color: colors.green,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: "600"
     },
     memberPaymentRow: {
-        minHeight: 54,
+        minHeight: 80,
         borderTopWidth: 1,
         borderTopColor: colors.line,
         paddingHorizontal: 18,
@@ -271,7 +276,7 @@ const styles = StyleSheet.create({
     },
     memberPaymentName: {
         color: colors.ink,
-        fontSize: 14,
+        fontSize: 16,
         fontWeight: "600"
     },
     memberPaymentPlan: {
@@ -306,5 +311,4 @@ const styles = StyleSheet.create({
         color: colors.coral,
         fontSize: 14
     },
-
 });

@@ -34,7 +34,7 @@ export function PaymentsPage() {
     const [actionError, setActionError] = useState("");
     const { payments, total, loading, error, markPaid } = usePayments(view, page);
     const { width } = useWindowDimensions();
-    const compact = width < 650;
+    const compact = width < 1000;
 
     const record = async (paymentId: string) => {
         setSavingId(paymentId);
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     tabTextSelected: { color: colors.green, fontWeight: "700" },
     listHeader: { minHeight: 75, paddingHorizontal: 18, flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: 14 },
     listHeaderCopy: { gap: 4 },
-    listTitle: { color: colors.ink, fontSize: 14, fontWeight: "700" },
+    listTitle: { color: colors.ink, fontSize: 18, fontWeight: "700" },
     listSubtitle: { color: colors.muted, fontSize: 14 },
     headerCountSkeleton: { width: 75, height: 12, marginTop: 2 },
     headerBadgeSkeleton: { width: 62, height: 23 },
@@ -248,9 +248,9 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         paddingVertical: 6,
     },
-    historyLabel: { color: colors.muted, fontSize: 13, fontWeight: "600" },
+    historyLabel: { color: colors.muted, fontSize: 14, fontWeight: "600" },
     recordButton: {
-        minHeight: 38,
+        minHeight: 44,
         paddingHorizontal: 12,
         paddingVertical: 0,
         alignSelf: "center",

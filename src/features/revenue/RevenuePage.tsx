@@ -20,7 +20,7 @@ export function RevenuePage() {
     const { data, error, loading, retry } = useRevenue();
     const { width } = useWindowDimensions();
     const [selectedMonthStart, setSelectedMonthStart] = useState("");
-    const columns = width < 900 ? 2 : 4;
+    const columns = width < 560 ? 1 : width < 1200 ? 2 : 4;
 
     const months = data?.months ?? [];
     const selectedMonth = months.find((month) => month.monthStart === selectedMonthStart)

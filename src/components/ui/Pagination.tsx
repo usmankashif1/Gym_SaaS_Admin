@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   row: { minHeight: 55, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12, paddingHorizontal: 17, borderTopWidth: 1, borderTopColor: colors.line },
   summary: { color: colors.muted, fontSize: 14 },
   controls: { flexDirection: "row", alignItems: "center", gap: 10 },
-  button: { width: 30, height: 30, borderWidth: 1, borderColor: colors.line, borderRadius: radii.small, alignItems: "center", justifyContent: "center" },
+  button: { width: 44, height: 44, borderWidth: 1, borderColor: colors.line, borderRadius: radii.small, alignItems: "center", justifyContent: "center" },
   disabled: { opacity: 0.55 },
   pageCount: { color: colors.muted, fontSize: 14, minWidth: 35, textAlign: "center" },
 });
